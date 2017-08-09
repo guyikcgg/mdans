@@ -1,0 +1,177 @@
+#LyX 2.2 created this file. For more info see http://www.lyx.org/
+\lyxformat 508
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass article
+\use_default_options true
+\maintain_unincluded_children false
+\language spanish
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language french
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Minería de Datos:
+\begin_inset Newline newline
+\end_inset
+
+Aprendizaje no Supervisado y Detección de Anomalías
+\begin_inset Newline newline
+\end_inset
+
+Trabajo teórico de la asignatura
+\end_layout
+
+\begin_layout Author
+Cristian González Guerrero
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset toc
+LatexCommand tableofcontents
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Introducción
+\end_layout
+
+\begin_layout Standard
+Este es el trabajo teórico de la asignatura 
+\emph on
+Minería de Datos: Aprendizaje no Supervisado y Detección de Anomalías
+\emph default
+, impartida en el 
+\emph on
+Máster en Ciencia de Datos e Ingeniería de Computadores
+\emph default
+ (DATCOM).
+ En el mismo, se desarrollan los contenidos de la asignatura, tomando como
+ hilo conductor las diapositivas de la misma y completando con la bibliografía
+ consultada.
+ Este trabajo, realizado de forma original por Cristian González Guerrero,
+ se presenta para su valoración en la evaluación extraordinara de Septiembre
+ de 2017.
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset include
+LatexCommand input
+filename "part-1-clustering.lyx"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset include
+LatexCommand input
+filename "part-2-anomalias.lyx"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset include
+LatexCommand input
+filename "part-3-asociacion-I.lyx"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset include
+LatexCommand input
+filename "part-4-asociacion-II.lyx"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Conclusión
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset bibtex
+LatexCommand bibtex
+bibfiles "mdans"
+options "unsrt"
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document
