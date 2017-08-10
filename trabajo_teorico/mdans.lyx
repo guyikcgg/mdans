@@ -165,6 +165,7 @@ Conclusión
 \begin_layout Standard
 \begin_inset CommandInset bibtex
 LatexCommand bibtex
+btprint "btPrintAll"
 bibfiles "mdans"
 options "unsrt"
 
