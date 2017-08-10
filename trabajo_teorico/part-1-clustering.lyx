@@ -80,12 +80,434 @@ Clustering
 Introducción
 \end_layout
 
+\begin_layout Standard
+El clustering o agrupamiento es el proceso de clasificar en grupos un conjunto
+ de items sin tener una información previa de su estructura.
+ Se trata de un problema parecido al de clasificación, en cuanto a que se
+ trata de clasificar los datos de entrata en grupos.
+ No obstante, el clustering presenta una gran diferencia con respecto a
+ la clasificación, y es que no se dispone de las clases, sino que se trata
+ de buscar relaciones entre los datos y crear grupos de elementos según
+ su parecido.
+\end_layout
+
+\begin_layout Standard
+Desde un punto de vista más técnico,
+\end_layout
+
+\begin_layout Subsubsection
+Clasificación de las técnicas de agrupamiento
+\end_layout
+
+\begin_layout Standard
+Las distintas técnicas de agrupamiento pueden clasificarse en particionales
+ y jerárquicas.
+\end_layout
+
+\begin_layout Description
+Agrupamiento
+\begin_inset space ~
+\end_inset
+
+Particional grupos disjuntos que cubren todo el conjunto de items
+\end_layout
+
+\begin_deeper
+\begin_layout Description
+Modelos
+\begin_inset space ~
+\end_inset
+
+relacionales cada grupo debe verificar
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+los items del mismo grupo deben estar próximos entre sí
+\end_layout
+
+\begin_layout Enumerate
+los distintos grupos deben estar a la mayor distancia posible
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+ejemplo: k-medias
+\end_layout
+
+\end_deeper
+\begin_layout Description
+Modelos
+\begin_inset space ~
+\end_inset
+
+de
+\begin_inset space ~
+\end_inset
+
+grafos
+\end_layout
+
+\begin_layout Description
+Mezcla
+\begin_inset space ~
+\end_inset
+
+de
+\begin_inset space ~
+\end_inset
+
+densidades un grupo es una región del espacio que
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+presenta una la densidad de items muy alta
+\end_layout
+
+\begin_layout Enumerate
+está rodeada de una región de baja densidad
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+ejemplo: máxima esperanza
+\end_layout
+
+\end_deeper
+\begin_layout Description
+Búsqueda
+\begin_inset space ~
+\end_inset
+
+de
+\begin_inset space ~
+\end_inset
+
+modas
+\end_layout
+
+\end_deeper
+\begin_layout Description
+Agrupamiento
+\begin_inset space ~
+\end_inset
+
+Jerárquico jerarquía de agrupamientos particionales anidados
+\end_layout
+
+\begin_deeper
+\begin_layout Description
+Enlace
+\begin_inset space ~
+\end_inset
+
+simple
+\begin_inset space ~
+\end_inset
+
+(single-link
+\begin_inset space ~
+\end_inset
+
+clustering)
+\end_layout
+
+\begin_layout Description
+Enlace
+\begin_inset space ~
+\end_inset
+
+ponderado
+\end_layout
+
+\begin_layout Description
+Enlace
+\begin_inset space ~
+\end_inset
+
+completo
+\begin_inset space ~
+\end_inset
+
+(complete-link
+\begin_inset space ~
+\end_inset
+
+clustering)
+\end_layout
+
+\end_deeper
+\begin_layout Standard
+Otras formas de clasificar las distintas técnicas de agrupamiento incluyen
+ la distinción entre agrupamientos 
+\emph on
+exclusivos
+\emph default
+, es decir, aquellos que no permiten solapamiento, forzando que cada item
+ pertenezca a un único grupo, y agrupamientos 
+\emph on
+no exclusivos
+\emph default
+, que son los que permiten solapamiento.
+ Dentro de esta última distinción, deben mencionarse las técnicas de agrupamient
+o difuso, en las cuáles los items pertenecen a los distintos grupos con
+ un nivel de pertenencia determinado.
+\end_layout
+
+\begin_layout Standard
+Finalmente, los algoritmos de agrupamiento pueden ser 
+\emph on
+aglomerativos
+\emph default
+ o 
+\emph on
+divisivos
+\emph default
+.
+ En el caso de los algoritmos aglomerativos, se parte de una situación inicial
+ en la que cada item es considerado un grupo, y en cada iteración se construyen
+ grupos cada vez más grandes fusionando los grupos ya existentes.
+ Los algoritmos divisivos, en cambio, tienen la aproximación opuesta.
+\end_layout
+
 \begin_layout Subsection
 Proximidad, distancia y semejanzas
 \end_layout
 
 \begin_layout Subsection
 Agrupamientos jerárquicos
+\end_layout
+
+\begin_layout Standard
+El agrupamiento jerárquico (
+\emph on
+hierarchical clustering
+\emph default
+) produce una estructura jerárquica que es más informativa que el set de
+ clusters desestructurados producido por los agrupamientos particionales.
+ Esta estructura tiene una representación gráfica muy intuitiva denominada
+ 
+\emph on
+dendrograma
+\emph default
+.
+ Además, el agrupamiento jerárquico no requiere especificar el número de
+ clusters.
+ No obstante, estas ventajas tienen como contrapunto una pérdida de eficiencia,
+ traducida en un mayor coste computacional de los algoritmos, que tienen
+ una complejidad de 
+\begin_inset Formula $O(n^{2})$
+\end_inset
+
+ o mayor.
+\end_layout
+
+\begin_layout Standard
+La mayoría de los algoritmos de agrupamiento jerárquico son 
+\emph on
+aglomerativos
+\emph default
+, y pueden clasificarse en función de la medida de proximidad que usan:
+\end_layout
+
+\begin_layout Description
+Enlace
+\begin_inset space ~
+\end_inset
+
+simple
+\begin_inset space ~
+\end_inset
+
+(single-link
+\begin_inset space ~
+\end_inset
+
+clustering) la proximidad viene dada por la mínima distancia entre nodos
+ de distintos clusters.
+ Esto tiene como consecuencia la minimización del enlace mínimo.
+ 
+\end_layout
+
+\begin_layout Description
+Enlace
+\begin_inset space ~
+\end_inset
+
+completo
+\begin_inset space ~
+\end_inset
+
+(complete-link
+\begin_inset space ~
+\end_inset
+
+clustering) la proximidad viene dada por la máxima distancia entre nodos
+ de distintos clusters.
+ Esto tiene como consecuencia la minimización del enlace máximo (o, equivalentem
+ente, del diámetro del nuevo cluster).
+\end_layout
+
+\begin_layout Description
+Enlace
+\begin_inset space ~
+\end_inset
+
+ponderado
+\begin_inset space ~
+\end_inset
+
+(average-link
+\begin_inset space ~
+\end_inset
+
+clustering) la proximidad viene dada por la media de las distancias entre
+ los nodos de distintos clusters.
+ Esto tiene como consecuencia la minimización del enlace medio.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename img/single-link.eps
+	width 40text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Enlace simple (single-link clustering)
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset space \hfill{}
+\end_inset
+
+
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename img/complete-link.eps
+	width 40text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Enlace completo (complete-link clustering)
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename img/average-link.eps
+	width 40text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Enlace ponderado (average-link clustering)
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Representación de los distintos tipos de enlace usados en el cálculo de
+ la proximidad entre clusters en las técnicas de agrupamiento jerárquico.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+En cuanto a algoritmos de agrupamiento jerárquico, cabe destacar el algoritmo
+ de Jhonson 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "johnson1967hierarchical"
+
+\end_inset
+
+, que resuelve el problema de encontrar las distancias más cortas entre
+ todos los items.
 \end_layout
 
 \begin_layout Subsection
@@ -104,6 +526,10 @@ DBSCAN
 Validación de agrupamientos
 \end_layout
 
+\begin_layout Standard
+—————
+\end_layout
+
 \begin_layout Subsection
 Extensiones de los métodos estudiados
 \end_layout
@@ -118,16 +544,6 @@ El método de las k-medias difuso
 
 \begin_layout Subsubsection
 Los métodos de k-medoides
-\end_layout
-
-\begin_layout Standard
-\begin_inset CommandInset citation
-LatexCommand cite
-key "cn"
-
-\end_inset
-
-
 \end_layout
 
 \end_body
