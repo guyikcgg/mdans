@@ -92,7 +92,17 @@ El clustering o agrupamiento es el proceso de clasificar en grupos un conjunto
 \end_layout
 
 \begin_layout Standard
-Desde un punto de vista más técnico,
+Desde un punto de vista más técnico, 
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+completar
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Subsubsection
@@ -273,6 +283,495 @@ divisivos
 
 \begin_layout Subsection
 Proximidad, distancia y semejanzas
+\end_layout
+
+\begin_layout Standard
+A la hora de plantear un problema de agrupamiento, se suele partir de un
+ conjuto de datos (
+\emph on
+dataset
+\emph default
+) compuesto por una serie de documentos (
+\emph on
+items
+\emph default
+) de los que se tienen una serie de medidas (
+\emph on
+variables
+\emph default
+).
+ Estas medidas o variables pueden ser de distintos tipos:
+\end_layout
+
+\begin_layout Description
+Cuantitativas si toman valores numéricos
+\end_layout
+
+\begin_deeper
+\begin_layout Description
+Continuas si los valores son continuos (por ejemplo, el peso de una persona)
+\end_layout
+
+\begin_layout Description
+Discretas si los valores son discretos (por ejemplo, el número de hijos)
+\end_layout
+
+\end_deeper
+\begin_layout Description
+Cualitativas si no toman valores numéricos
+\end_layout
+
+\begin_deeper
+\begin_layout Description
+Valores
+\begin_inset space ~
+\end_inset
+
+nominales
+\begin_inset space ~
+\end_inset
+
+(no
+\begin_inset space ~
+\end_inset
+
+ordenados) si toman un valor de un conjunto no ordenado (por ejemplo, el
+ color de pelo)
+\end_layout
+
+\begin_layout Description
+Valores
+\begin_inset space ~
+\end_inset
+
+ordinales si toman un valor de un conjunto ordenado (por ejemplo, el grado
+ de satisfacción)
+\end_layout
+
+\begin_deeper
+\begin_layout Description
+Variables
+\begin_inset space ~
+\end_inset
+
+binarias son un subtipo de valor ordinal, que indica la presencia o la ausencia
+ de una característica
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout Standard
+En general, todos los algoritmos de agrupamiento parten de una 
+\emph on
+matriz de proximidad
+\emph default
+, que se construye a partir de los items del conjunto de datos de trabajo
+ (aunque en algunos problemas puede venir dada).
+ Dicha matriz representa la proximidad (o la distancia) entre los distintos
+ items del dataset.
+\end_layout
+
+\begin_layout Standard
+Formalmente, la matriz de proximidad es una matriz 
+\begin_inset Formula $n\times n$
+\end_inset
+
+, siendo 
+\begin_inset Formula $n$
+\end_inset
+
+ el número de items del dataset, donde la casilla 
+\begin_inset Formula $ik$
+\end_inset
+
+ representa la proximidad del elemento 
+\begin_inset Formula $i$
+\end_inset
+
+ al elemento 
+\begin_inset Formula $k$
+\end_inset
+
+.
+ Esta proximidad debe medirse con un 
+\emph on
+índice de proximidad
+\emph default
+ apropiado al tipo de datos del problema a resolver.
+\end_layout
+
+\begin_layout Subsubsection
+Índices de proximidad: distancias y semejanzas
+\end_layout
+
+\begin_layout Standard
+Para resolver el problema de construir una matriz de proximidad a partir
+ del conjunto de items 
+\begin_inset Formula $I$
+\end_inset
+
+ del dataset, usaremos un índice de proximidad 
+\begin_inset Formula $d:I\times I\rightarrow\mathbb{R}$
+\end_inset
+
+ que deberá verificar:
+\end_layout
+
+\begin_layout Enumerate
+\begin_inset space ~
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+\begin_inset CommandInset label
+LatexCommand label
+name "enu:indice-proximidad-distancia"
+
+\end_inset
+
+Si 
+\begin_inset Formula $d$
+\end_inset
+
+ mide distancia, la distancia de un item consigo mismo es nula
+\begin_inset Formula 
+\[
+d\left(i,i\right)=0\,\forall i\in I
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+\begin_inset CommandInset label
+LatexCommand label
+name "enu:indice-proximidad-similaridad"
+
+\end_inset
+
+Si 
+\begin_inset Formula $d$
+\end_inset
+
+ mide similaridad, la similaridad de un item consigo mismo es mayor que
+ la similaridad de este mismo item con cualquier otro
+\begin_inset Formula 
+\[
+d\left(i,i\right)\ge\max_{k\in I}d\left(i,k\right)\,\forall i\in I
+\]
+
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+\begin_inset CommandInset label
+LatexCommand label
+name "enu:indice-proximidad-simetria"
+
+\end_inset
+
+El índice de proximidad es una función simétrica
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+/conmutativa?
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula 
+\[
+d\left(i,k\right)=d\left(k,i\right)\,\forall i,k\in I
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+\begin_inset CommandInset label
+LatexCommand label
+name "enu:indice-proximidad-no-negativa"
+
+\end_inset
+
+El índice de proximidad es una medida no negativa
+\begin_inset Formula 
+\[
+d\left(i,k\right)\ge0
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Estos índices de proximidad no son más que una generalización de otras medidas
+ más conocidas, como las 
+\emph on
+funciones de distancia
+\emph default
+ o las 
+\emph on
+de similaridad
+\emph default
+
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+/proximidad?
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsubsection
+Funciones de distancia
+\end_layout
+
+\begin_layout Standard
+Miden la distancia (o, equivalentemente, disimilaridad) de los items de
+ un conjunto.
+ Además de las propiedades 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "enu:indice-proximidad-distancia"
+
+\end_inset
+
+, 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "enu:indice-proximidad-simetria"
+
+\end_inset
+
+ y 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "enu:indice-proximidad-no-negativa"
+
+\end_inset
+
+, las funciones de distancia deben cumplir la desigualdad triangular
+\begin_inset Formula 
+\[
+d\left(i,k\right)\le d\left(i,l\right)+d\left(l,k\right)\,\forall i,k,l\in I
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Algunas funciones de distancia usualmente utilizadas son las que se presentan
+ en
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "tab:Funciones-de-distancia"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float table
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\noindent
+\align center
+\begin_inset Tabular
+<lyxtabular version="3" rows="6" columns="2">
+<features tabularvalignment="middle">
+<column alignment="center" valignment="middle" width="45text%">
+<column alignment="left" valignment="middle" width="45text%">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Función de distancia
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Notas
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Distancia euclídea (norma-
+\begin_inset Formula $l_{2}$
+\end_inset
+
+)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Es conveniente cuando pueden encontrarse grupos compactos y aislados
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Distancia de Manhattan (norma-
+\begin_inset Formula $l_{1}$
+\end_inset
+
+)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Norma del supremo
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Distancia de Minkwski (norma-
+\begin_inset Formula $l_{p}$
+\end_inset
+
+)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Es una generalización de las distancias euclídea y de Manhattan.
+ Es conveniente con variables normalizadas, ya que de lo contrario da mucho
+ peso a los valores extremos.
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Distancia de Mahalanobis
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Es otra generalización de la distancia euclídea.
+ Es conveniente en variables continuas con correlación entre ellas.
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "tab:Funciones-de-distancia"
+
+\end_inset
+
+Funciones de distancia usuales.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Subsection
@@ -508,6 +1007,8 @@ key "johnson1967hierarchical"
 
 , que resuelve el problema de encontrar las distancias más cortas entre
  todos los items.
+ Para ello, modifica la matriz de distancias en cada iteración, a partir
+ de la sucesiva creación de grupos, que se van añadiendo a la misma.
 \end_layout
 
 \begin_layout Subsection
