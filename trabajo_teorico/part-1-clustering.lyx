@@ -277,8 +277,13 @@ divisivos
 .
  En el caso de los algoritmos aglomerativos, se parte de una situación inicial
  en la que cada item es considerado un grupo, y en cada iteración se construyen
- grupos cada vez más grandes fusionando los grupos ya existentes.
- Los algoritmos divisivos, en cambio, tienen la aproximación opuesta.
+ grupos cada vez más grandes fusionando los grupos ya existentes, hasta
+ tener un único cluster.
+ Se trata por tanto de una visión Bottom-Up.
+ Los algoritmos divisivos, en cambio, comienzan con un único cluster, consideran
+ todas las posibles formas de dividir este cluster en dos y eligen la mejor
+ división, operando de forma recursiva en ambas divisiones.
+ Tienen por tanto una visión Top-Down del problema.
 \end_layout
 
 \begin_layout Subsection
@@ -479,16 +484,6 @@ name "enu:indice-proximidad-simetria"
 \end_inset
 
 El índice de proximidad es una función simétrica
-\begin_inset Note Note
-status open
-
-\begin_layout Plain Layout
-/conmutativa?
-\end_layout
-
-\end_inset
-
-
 \begin_inset Formula 
 \[
 d\left(i,k\right)=d\left(k,i\right)\,\forall i,k\in I
@@ -547,7 +542,10 @@ Funciones de distancia
 \begin_layout Standard
 Miden la distancia (o, equivalentemente, disimilaridad) de los items de
  un conjunto.
- Además de las propiedades 
+\end_layout
+
+\begin_layout Standard
+Además de las propiedades 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "enu:indice-proximidad-distancia"
@@ -580,7 +578,7 @@ d\left(i,k\right)\le d\left(i,l\right)+d\left(l,k\right)\,\forall i,k,l\in I
 \end_layout
 
 \begin_layout Standard
-Algunas funciones de distancia usualmente utilizadas son las que se presentan
+Algunas funciones de distancia usualmente utilizadas son las presentadas
  en
 \begin_inset space ~
 \end_inset
@@ -599,7 +597,7 @@ reference "tab:Funciones-de-distancia"
 \begin_inset Float table
 wide false
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \noindent
@@ -635,7 +633,7 @@ Notas
 
 \begin_layout Plain Layout
 Distancia euclídea (norma-
-\begin_inset Formula $l_{2}$
+\begin_inset Formula $\ell_{2}$
 \end_inset
 
 )
@@ -647,7 +645,8 @@ Distancia euclídea (norma-
 \begin_inset Text
 
 \begin_layout Plain Layout
-Es conveniente cuando pueden encontrarse grupos compactos y aislados
+Es conveniente cuando pueden encontrarse grupos compactos y aislados.
+ Conviene tener los datos normalizados.
 \end_layout
 
 \end_inset
@@ -658,8 +657,8 @@ Es conveniente cuando pueden encontrarse grupos compactos y aislados
 \begin_inset Text
 
 \begin_layout Plain Layout
-Distancia de Manhattan (norma-
-\begin_inset Formula $l_{1}$
+Distancia Manhattan (norma-
+\begin_inset Formula $\ell_{1}$
 \end_inset
 
 )
@@ -671,7 +670,7 @@ Distancia de Manhattan (norma-
 \begin_inset Text
 
 \begin_layout Plain Layout
-
+Conviene tener los datos normalizados.
 \end_layout
 
 \end_inset
@@ -682,7 +681,11 @@ Distancia de Manhattan (norma-
 \begin_inset Text
 
 \begin_layout Plain Layout
-Norma del supremo
+Norma del supremo (norma-
+\begin_inset Formula $\ell_{\infty}$
+\end_inset
+
+)
 \end_layout
 
 \end_inset
@@ -691,7 +694,7 @@ Norma del supremo
 \begin_inset Text
 
 \begin_layout Plain Layout
-
+Conviene tener los datos normalizados.
 \end_layout
 
 \end_inset
@@ -703,7 +706,7 @@ Norma del supremo
 
 \begin_layout Plain Layout
 Distancia de Minkwski (norma-
-\begin_inset Formula $l_{p}$
+\begin_inset Formula $\ell_{p}$
 \end_inset
 
 )
@@ -715,7 +718,8 @@ Distancia de Minkwski (norma-
 \begin_inset Text
 
 \begin_layout Plain Layout
-Es una generalización de las distancias euclídea y de Manhattan.
+Es una generalización de las distancias euclídea, Manhattan y la norma del
+ supremo.
  Es conveniente con variables normalizadas, ya que de lo contrario da mucho
  peso a los valores extremos.
 \end_layout
@@ -772,6 +776,269 @@ Funciones de distancia usuales.
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+En general, las funciones de distancia son usadas cuando el set de datos
+ presenta variables continuas o valores enteros.
+ En algunos casos, las medidas de distancia también pueden ser útiles en
+ el caso de variables ordinales.
+\end_layout
+
+\begin_layout Subsubsection
+Funciones de similaridad o semajanza
+\end_layout
+
+\begin_layout Standard
+Miden el parecido o semejanza de los items de un conjunto.
+\end_layout
+
+\begin_layout Standard
+Además de las propiedades 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "enu:indice-proximidad-similaridad"
+
+\end_inset
+
+, 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "enu:indice-proximidad-simetria"
+
+\end_inset
+
+ y 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "enu:indice-proximidad-no-negativa"
+
+\end_inset
+
+, las funciones de semejanza deben cumplir
+\begin_inset Formula 
+\[
+d\left(i,i\right)=1\,\forall i\in I
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Algunas funciones de semejanza usualmente utilizadas son las presentadas
+ en
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:Funciones-de-semejanza"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float table
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\noindent
+\align center
+\begin_inset Tabular
+<lyxtabular version="3" rows="6" columns="2">
+<features tabularvalignment="middle">
+<column alignment="center" valignment="middle" width="45text%">
+<column alignment="left" valignment="middle" width="45text%">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Función de semejanza
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Notas
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Coeficiente de correlación de Pearson
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Indica la dependencia lineal entre dos items, a través de su correlación.
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Medida del coseno
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Se basa en calcular el coseno del ángulo que forman los items cuando son
+ representados como vectores en un espacio vectorial con métrica euclídea.
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Índice de Jaccard
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\emph on
+Sólo para variables binarias
+\emph default
+.
+ Es la razón entre las ocurrencias conjuntas y cualquier tipo de ocurrencia
+ de las dos variables.
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Índice de acoplamiento simple
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\emph on
+Sólo para variables binarias
+\emph default
+.
+ Indica la probabilidad de encontrar los dos items a la vez o de no encontrar
+ ninguno.
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Índice de Dice
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\emph on
+Sólo para variables binarias
+\emph default
+.
+ Se trata de la media armónica que combina los valores de precisión y exhaustivi
+dad.
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "tab:Funciones-de-semejanza"
+
+\end_inset
+
+Funciones de distancia usuales.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Las funciones de similaridad o semejanza son especialmente útiles cuando
+ se trata de evaluar factores binarios, o bien variables nominales (no ordinales
+), que pueden ser transformadas en factores binarios.
+\end_layout
+
+\begin_layout Standard
+Además de las funciones de distancia y las de semejanza, existen relaciones
+ de semejanza difusas, que son especialmente útiles con variables nominales.
+\end_layout
+
+\begin_layout Standard
+Cabe destacar que la preparación de los datos y la selección de distancias
+ son etapas fundamentales a la hora de enfrentarse a un trabajo de agrupamiento.
 \end_layout
 
 \begin_layout Subsection
@@ -1015,16 +1282,154 @@ key "johnson1967hierarchical"
 Agrupamientos particionales
 \end_layout
 
-\begin_layout Subsubsection
-El método de las k-medias
+\begin_layout Standard
+Las técnicas de agrupamiento particional pueden dividirse en tres aproximaciones
+ distintas.
 \end_layout
 
 \begin_layout Subsubsection
+Agrupamientos basados en centroide
+\end_layout
+
+\begin_layout Standard
+Suponen que cada grupo está representado por un prototipo y asignan cada
+ item al grupo cuyo prototipo esté más cercano.
+ Este prototipo puede ser el item más representativo del grupo (
+\emph on
+medoide
+\emph default
+) o bien, cuando las variables son numéricas, un punto medio entre los items
+ que lo componen (
+\emph on
+centroide
+\emph default
+).
+ En el último caso, el cálculo del punto medio deberá atenerse a alguna
+ métrica en concreto.
+\end_layout
+
+\begin_layout Paragraph
+k-medias
+\end_layout
+
+\begin_layout Standard
+El algoritmo más representativo de este tipo de técnicas es el de las 
+\emph on
+k-medias
+\emph default
+ (
+\emph on
+k-means
+\emph default
+).
+ Este algoritmo trata de dividir el espacio en los 
+\begin_inset Formula $k$
+\end_inset
+
+ grupos más representativos, de forma que las distancias de los items de
+ cada grupo a su centroide sea minimizada.
+\end_layout
+
+\begin_layout Standard
+Este algoritmo has sido ampliamente estudiado y presenta numerosas ventajas:
+ 
+\end_layout
+
+\begin_layout Standard
+En primier lugar, las particiones forman una estructura conocida como diagrama
+ de Voronoi, que tiene una representación muy intuitiva.
+ También cabe destacar que conceptualmente se parece al también conocido
+ algoritmo k-NN para clasificación.
+\end_layout
+
+\begin_layout Standard
+No obstante, k-medias no está exento de inconvenientes:
+\end_layout
+
+\begin_layout Standard
+El problema de optimización planteado es computacionalmente muy costoso,
+ por lo que se suele atajar con aproximaciones iterativas que generalmente
+ caen en mínimos locales.
+ Esto hace que el algoritmo deba ejecutarse varias veces, usando distintos
+ puntos de partida.
+ Por otro lado, el hecho de tener que elegir de antemano el número de clusters
+ 
+\begin_inset Formula $k$
+\end_inset
+
+ suele ser visto como un inconveniente.
+\end_layout
+
+\begin_layout Standard
+Cabe destacar la importancia de este método, que ha inspirado numerosas
+ variantes para tratar de solucionar sus puntos débiles.
+ Entre los métodos desarrollados, debe mencionarse el 
+\emph on
+método de las k-medias difuso
+\emph default
+, que aplica el concepto de conjuntos difusos para crear particiones difusas,
+ asociando a cada item un grado de pertenencia a dichas particiones.
+\end_layout
+
+\begin_layout Subsubsection
+Agrupamientos basados en distribuciones
+\end_layout
+
+\begin_layout Standard
+Supone que cada grupo es una distribución de probabilidad de la que se han
+ extraído los items, que pasan a ser una muestra.
+ Es el modelo más ligado a la estadística y tiene una teoría muy bien fundamenta
+da, no obstante, suelen producir sobreajuste, a menos que se impongan restriccio
+nes sobre la complejidad del modelo.
+\end_layout
+
+\begin_layout Standard
+Tal vez el método más prominente de este tipo de aproximaciones sea la mezcla
+ Gaussiana, que modela el conjunto de datos con un número de distribuciones
+ Gaussianas de las que se supone que se han extraído las muestras.
+ El algoritmo trata de centrar las distribuciones y ajustar su varianza
+ para aumentar la probabilidad de que las muestras hayan sido tomadas de
+ estas distribuciones.
+\end_layout
+
+\begin_layout Subsubsection
+Agrupamientos basados en densidad
+\end_layout
+
+\begin_layout Standard
+Supone que cada grupo está definido por una zona en la que hay una alta
+ densidad de items y que está rodeado por una zona de baja densidad.
+\end_layout
+
+\begin_layout Paragraph
 DBSCAN
+\end_layout
+
+\begin_layout Standard
+El algoritmo más representativo de este método es DBSCAN.
+ Éste
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+COMPLETAR
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Subsection
 Validación de agrupamientos
+\end_layout
+
+\begin_layout Paragraph
+Criterios internos
+\end_layout
+
+\begin_layout Paragraph
+Criterios externos
 \end_layout
 
 \begin_layout Standard
