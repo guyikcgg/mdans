@@ -1092,6 +1092,75 @@ key "chawla2002smote"
 Métodos basados en algoritmo (algorithm-based methods)
 \end_layout
 
+\begin_layout Standard
+Estos métodos dejan intacto el dataset.
+ A cambio, modifican los algoritmos de clasificación para dar más peso a
+ las clases minoritarias.
+ Existen varias formas de modificar los algoritmos:
+\end_layout
+
+\begin_layout Paragraph
+Métodos sensitivos al coste
+\end_layout
+
+\begin_layout Standard
+Consisten en asignar un coste elevado a los datos de las clases minoritarias,
+ haciéndolos más relevantes y consiguiendo una mejor clasificación.
+\end_layout
+
+\begin_layout Paragraph
+Bagging
+\end_layout
+
+\begin_layout Standard
+Consiste en aplicar el algoritmo de clasificación varias veces, cada vez
+ con una muestra del dataset diferente, que puede incluir elementos duplicados.
+ Estas clasificaciones deberán producir modelos con sobreajuste, que luego
+ serán promediados.
+ De este modo, en cada paso se conseguirá un modelo más efectivo, que habrá
+ contado con la presencia de más observaciones anómalas durante su construcción,
+ mejorando así la calidad de la clasificación.
+\end_layout
+
+\begin_layout Paragraph
+Boosting
+\end_layout
+
+\begin_layout Standard
+Consiste en aplicar el algoritmo de clasificación varias veces, dando cada
+ vez más peso a los elementos que no fueron bien clasificados.
+ De este modo, en cada paso del algoritmo se conseguirá un modelo más efectivo,
+ que habrá sido entrenado dando más importancia a los elementos minoritarios.
+\end_layout
+
+\begin_layout Paragraph
+Adaptaciones específicas
+\end_layout
+
+\begin_layout Standard
+Además, existen algoritmos de clasificación específicos que están adaptados
+ al problema de clasificación no balanceada.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+Evaluación: No se debe usar la precisión de la clasificación (accuracy),
+ sino Recall, Precision, F-measure, F measure, ROC ROC- curves, etc.
+ (medidas alternativas).
+\end_layout
+
+\begin_layout Plain Layout
+Base rate fallacy
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Subsection
 Métodos semisupervisados
 \end_layout
