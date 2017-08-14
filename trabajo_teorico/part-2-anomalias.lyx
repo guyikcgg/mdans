@@ -177,7 +177,7 @@ status collapsed
 \begin_inset Float table
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \begin_inset Tabular
@@ -425,7 +425,13 @@ Yes
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Métodos supervisados.
+\begin_inset CommandInset label
+LatexCommand label
+name "tab:Métodos-supervisados"
+
+\end_inset
+
+Métodos supervisados
 \end_layout
 
 \end_inset
@@ -681,7 +687,13 @@ N/A
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Métodos semisupervisados.
+\begin_inset CommandInset label
+LatexCommand label
+name "tab:Métodos-semisupervisados"
+
+\end_inset
+
+Métodos semisupervisados
 \end_layout
 
 \end_inset
@@ -948,7 +960,13 @@ N/A
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Métodos no supervisados.
+\begin_inset CommandInset label
+LatexCommand label
+name "tab:Métodos-no-supervisados"
+
+\end_inset
+
+Métodos no supervisados
 \end_layout
 
 \end_inset
@@ -983,8 +1001,15 @@ Métodos supervisados
 \end_layout
 
 \begin_layout Standard
-Parten de la existencia de anomalías conocidas en el conjunto de datos de
- entrenamiento (
+Los métodos supervisados (
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "tab:Métodos-supervisados"
+
+\end_inset
+
+) parten de la existencia de anomalías conocidas en el conjunto de datos
+ de entrenamiento (
 \emph on
 training set
 \emph default
@@ -1165,20 +1190,371 @@ Base rate fallacy
 Métodos semisupervisados
 \end_layout
 
+\begin_layout Standard
+Los métodos semisupervisados (
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "tab:Métodos-semisupervisados"
+
+\end_inset
+
+) parten de la inexistencia de anomalías en el set de datos de entrenamiento.
+ De este modo, el problema de detección de anomalías se basa en identificar
+ futuras observaciones que no se ajustan al comportamiento normal previamente
+ observado.
+ Para ello, es necesario crear un 
+\emph on
+perfil de comportamiento normal
+\emph default
+.
+ Una vez hecho esto, se podrá considerar que una anomalía es una observación
+ que no se ajusta a este perfil.
+\end_layout
+
+\begin_layout Standard
+Los perfiles de comportamiento normal pueden ser modelado a través de diferentes
+ métodos, que se tratan brevemente a continuación.
+\end_layout
+
+\begin_layout Subsubsection
+Métodos basados en clasificación
+\end_layout
+
+\begin_layout Standard
+Se basan en proporcionar un valor numérico que indica cómo de anómala parece
+ una observación, atendiendo a que se ajuste bien o no a las clases aprendidas
+ durante el entrenamiento.
+ Esta tarea puede llevarse a cabo con clasificadores bayesianos, árboles
+ de decisión, reglas de asociación o incluso modelos de Markov 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "estevez2003stochastic,cohen1995fast"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsubsection
+Métodos basados en reglas de asociación
+\end_layout
+
+\begin_layout Standard
+Se basan en generar reglas 
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+COMPLETAR
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Métodos basados en kernels
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+COMPLETAR
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Otros métodos
+\end_layout
+
+\begin_layout Standard
+Otra forma de identificar una anomalía es detectar un evento o patrón que
+ no ha sido observado en le pasado.
+ En este sentido, la detección de anomalías puede verse como una comparación
+ con registros históricos, en la que el problema se reduce a elegir atributos
+ de interés en los datos observados y llevar a cabo un conteo del número
+ de observaciones que tiene normalmente cada atributo.
+\end_layout
+
 \begin_layout Subsection
 Métodos no supervisados
+\end_layout
+
+\begin_layout Standard
+Los métodos no supervisados (
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "tab:Métodos-no-supervisados"
+
+\end_inset
+
+) parten de la ausencia de información acerca de la 
+\begin_inset Quotes fld
+\end_inset
+
+normalidad
+\begin_inset Quotes frd
+\end_inset
+
+ o 
+\begin_inset Quotes fld
+\end_inset
+
+irregularidad
+\begin_inset Quotes frd
+\end_inset
+
+ de las observaciones.
+ De este modo, el set de datos puede contener anomalías que no han sido
+ etiquetadas, no pudiendo diferenciar a priori si una observación es anómala
+ o no.
+\end_layout
+
+\begin_layout Standard
+En este caso, el problema se traduce a identificar qué observaciones presentan
+ unos atributos muy alejados de lo normal, o bien una combinación extraña
+ de valores.
+ Por este hecho, las observaciones anómalas son también llamadas 
+\emph on
+valores atípicos
+\emph default
+ (o 
+\emph on
+outliers
+\emph default
+) en este ámbito.
+ 
+\end_layout
+
+\begin_layout Standard
+Al medir la lejanía o distancia de un outlier a la norma, siempre se dará
+ un índice numérico para indicar cómo de anómalo parece el dato.
+ Existen varias aproximaciones para medir esta distancia, que se presentan
+ a continuación.
 \end_layout
 
 \begin_layout Subsubsection
 Aproximaciones gráficas y estadísticas
 \end_layout
 
+\begin_layout Standard
+Las aproximaciones gráficas pasan por llevar a cabo una representación gráfica
+ de las observaciones, pudiendo así identificar visualmente qué puntos están
+ alejados del resto.
+ Se trata de una aproximación útil cuando los registros no tienen demasiados
+ atributos (o, equivalentemente, tienen un número limitado de dimensiones).
+ No obstante, estos métodos son muy subjetivos y requieren de una inspección
+ de los datos que difícilmente puede automatizarse.
+\end_layout
+
+\begin_layout Standard
+Las aproximaciones estadísticas, en cambio, se basan en aplicar contraste
+ de hipótesis para verificar si una observación puede ser calificada como
+ anómala con un determinado nivel de significación (p-value).
+ Estos tests deben ser elegidos en función de la distribución de datos,
+ que se asume conocida, algunos parámetros de la propia distribución y el
+ número esperado de outliers.
+\end_layout
+
+\begin_layout Standard
+Además de estos tests estadísticos, existe una buena solución que se basa
+ en la distancia de Mahalanobis.
+ La distancia de Mahalanobis permite medir la distancia de un punto a una
+ distribución normal multidimensional.
+ Esta distancia tiene en cuenta tanto la media como la varianza de la distribuci
+ón, por lo que no necesita la normalización de los datos.
+ Además, existe una versión robusta de esta distancia, que tiene en cuenta
+ el determinante de mínima covarianza (minimum covariance determinant) en
+ lugar de la media.
+\end_layout
+
+\begin_layout Standard
+Los estimadores que usan la distancia de Mahalonobis tienen la ventaja de
+ ser paramétricos, por lo que tienen una eficiencia mayor y funcionan muy
+ bien con distribuciones normales.
+ No obstante, estas aproximaciones no son válidas cuando la distribución
+ no es normal, o bien los datos pueden venir de una mezcla de distribuciones
+ normales, como puede observarse en
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "fig:Mahalanobis-not-working"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename img/Mahalanobis-not-working.eps
+	width 100text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Mahalanobis-not-working"
+
+\end_inset
+
+Distancia de Mahalanobis en casos desfavorables.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Subsubsection
 Aproximaciones basadas en la distancia
 \end_layout
 
+\begin_layout Standard
+Las aproximaciones basadas en la distancia tratan de solventar los problemas
+ de desconocer la distribución estadística de los datos, que no suele ser
+ normal, sino más bien una combinación de varias distribuciones pseudo-normales.
+ Para ello, se deberá calcular la distancia entre los puntos sospechosos
+ de ser anómalos y el resto, comparándolos a su vez con la distancia que
+ tienen la mayoría de los puntos entre sí.
+\end_layout
+
+\begin_layout Standard
+En la práctica, esto suele llevarse a cabo usando una aproximación de los
+ k vecinos más cercanos (k nearest neighbors).
+\end_layout
+
+\begin_layout Standard
+En el caso más básico, se calcula la distancia de cada punto a su k-ésimo
+ punto más cercano.
+ Esta distancia se toma como índice de lejanía, que servirá para determinar
+ si el punto en cuestión es o no un outlier al comparar la medida con la
+ normal.
+ Esta aproximación es simple, pero tiene numerosos problemas, como el coste
+ computacional, la elección de 
+\begin_inset Formula $k$
+\end_inset
+
+, o la incapacidad de detectar anomalías en el caso de tener distribuciones
+ con densidades muy distintas.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename img/knn-anomaly-not-working.png
+	width 100col%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Una versión un poco más sofisticada consiste en comparar la inversa de la
+ distancia media de cada punto a sus k vecinos más cercanos (
+\emph on
+k-density
+\emph default
+) con la media de las inversas de las distancias entre estos k vecinos.
+ El índice de lejanía (
+\emph on
+anomaly score
+\emph default
+) en este caso recibe el nombre de LOF, y es el resultado de dividir la
+ primera medida entre la segunda (
+\emph on
+k-relative density
+\emph default
+).
+ Este método produce muy buenos resultados en la mayoría de los casos.
+\end_layout
+
 \begin_layout Subsubsection
 Aproximaciones basadas en clustering
+\end_layout
+
+\begin_layout Standard
+Este tipo de aproximaciones se basan en crear un modelo de clusters a través
+ de agrupamiento, para luego tratar de detectar qué datos no pertenecen
+ a ningún cluster o se encuentran lejanos a los centroides de todos los
+ clusters.
+\end_layout
+
+\begin_layout Standard
+En el primero de los casos, los agrupamientos basados en densidad como DBSCAN
+ u OPTICS pueden clasificar un punto como no perteneciente a ninguno de
+ los clusters aprendidos.
+ De este modo, una anomalía sería un punto que no pertenece a ningún cluster,
+ por presentar unos atributos que lo hacen estar fuera de una zona de alta
+ densidad.
+\end_layout
+
+\begin_layout Standard
+La otra posibilidad es establecer un índice de lejanía, que puede definirse
+ como la distancia al centroide más cercano.
+ En este caso, existen distintas aproximaciones válidas para el cálculo
+ de esta distancia:
+\end_layout
+
+\begin_layout Enumerate
+la distancia euclídea entre el punto y el centroide más cercano, dividida
+ por la distancia mediana entre todos los puntos del cluster en cuestión.
+\end_layout
+
+\begin_layout Enumerate
+la distancia de Mahalanobis entre el punto y la distribución del cluster
+ más cercano.
+\end_layout
+
+\begin_layout Standard
+En cualquiera de estos casos, un modelo de 
+\begin_inset Formula $k$
+\end_inset
+
+ clusters debe ser elaborado.
+ La elección del parámetro 
+\begin_inset Formula $k$
+\end_inset
+
+ es problemática.
+ Cabe destacar que 
+\begin_inset Formula $k$
+\end_inset
+
+ debe ser un número relativamente grande, para tener así un buen número
+ de pequeños clusters y que los outliers sean más facilmente detectados.
 \end_layout
 
 \begin_layout Subsection
