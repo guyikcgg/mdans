@@ -1,0 +1,342 @@
+---
+title: 'Minería de Datos: Aprendizaje no supervisado y detección de anomalías'
+author: "Cristian González Guerrero"
+date: "4 September 2017"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Presentación y visualización de los datos
+
+El conjunto de datos `bankloan` puede ser abierto en R usando la siguiente instrucción.
+```{r}
+dataset = read.csv("data/bankloan-spss.csv", sep = ";", dec = ",")
+dataset$impago = as.factor(dataset$impago)
+```
+
+Este conjunto de datos recoje 850 casos de clientes de un banco que piden préstamos,
+incluyendo el hecho de que hayan pagado o no.
+Se incluyen datos personales y salariales. También se incluyen datos estimados de probabilidad de impago.
+
+Como puede comprobarse con el siguiente código, el conjunto de datos presenta 850 filas y 12 columnas, lo que se corresponde a 850 observaciones de 12 variables.
+
+```{r}
+dim(dataset)
+
+str(dataset)
+```
+
+También podemos ver que todas las variables son de tipo numérico. En concreto, hay 6 variables enteras y 6 variables que toman valores continuos.
+
+```{r}
+data.types = sapply(dataset, class)
+table(data.types)
+```
+
+A continuación se muestra un resumen de los datos contenidos en nuestro conjunto de datos.
+
+```{r}
+# Summary
+summary(dataset)
+
+# Data range
+mt = matrix(nrow = ncol(dataset), ncol = 3)
+mt[,1] = names(data.types)
+mt[,2] = data.types
+for (i in 1:ncol(dataset)) {
+  if (data.types[i] == "numeric") {
+    mt[i,3] = 
+      sprintf("[%.2f, %.2f]", min(dataset[,i], na.rm = T), max(dataset[,i], na.rm = T))
+  } else if (data.types[i] == "integer") {
+    mt[i,3] = 
+      sprintf("[%d, %d]", min(dataset[,i], na.rm = T), max(dataset[,i], na.rm = T))
+  } else {
+    mt[i,3] = 
+      paste("{", paste(levels(dataset[,i]), collapse = ", "), "}", sep = "")
+  }
+}
+
+mt
+```
+
+A continuación comprobamos si existen valores perdidos en nuestro conjunto de datos.
+
+```{r}
+data.frame(
+  missing.values = colSums(is.na(dataset)), 
+  proportion = colSums(is.na(dataset)/nrow(dataset))
+)
+```
+
+Podemos comprobar que hay 150 valores perdidos en la variable impago, lo que supone un 17.65% de los datos.
+
+A continuación se muestra un gráfico con las densidades de probabilidad de cada variable.
+
+```{r}
+library(reshape)
+library(ggplot2)
+
+cbPalette = c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+
+myData = melt.data.frame(dataset)
+
+ggplot(myData) +
+  geom_density(aes(value, fill = variable), alpha = 0.5) +
+  facet_wrap(~variable, scales = "free") +
+  ggtitle("Distribución de frecuencias de cada variable")
+```
+
+
+La variable impago es especialmente interesante, ya que el objetivo final de nuestro trabajo será tratar de averiguar qué clientes cometerán impago.
+
+```{r}
+myData = melt.data.frame(
+  dataset,
+  id.vars = "impago"
+)
+
+ggplot(myData) +
+  geom_freqpoly(aes(value, color = impago), bins = 20) +
+  facet_wrap(~variable, scales = "free", ncol = 4) +
+  ggtitle("Distribución de frecuencias de cada variable, en función del impago")
+
+ggplot(dataset) +
+  geom_bar(aes(impago, fill = impago)) +
+  ggtitle("Frecuencias absolutas de la variable impago")
+```
+
+Como podemos observar, la mayor parte de los casos estudiados no tiene impagos. Sin embargo, una parte significativa (alrededor del 26%) produce impagos.
+
+Habrá que buscar qué relación tienen estos impagos con el resto de variables, para ello aplicaremos técnicas de aprendizaje no supervisado.
+
+
+# Reglas de asociación
+
+## Visualización de las distintas clases
+
+En primer lugar, visualizaremos mejor los datos con unos diagramas de cajas con bigotes.
+
+```{r}
+ggplot(myData) +
+  geom_boxplot(aes(impago, value, fill = impago)) +
+  facet_wrap(~variable, scales = "free") +
+  ggtitle("Distribución de frecuencias de cada variable, en función del impago")
+```
+
+Estos gráficos demuestran que las variables `morapred1`, `morapred2` y `morapred3`, correspondientes a las predicciones de morosidad tienen una relación muy fuerte con el impago.
+
+## Discretización
+
+La aplicación de las reglas de asociación requiere que todas las variables de entrada sean discretas. Por esto aplicaremos una discretización antes de comenzar con las reglas de asociación.
+
+Este paso es crucial, y los valores elegidos aquí serán determinantes para el proceso que viene a continuación. Normalmente, un experto debería indicarnos cuáles son los mejores puntos de corte para la discretización, o bien se debería llevar a cabo un proceso iterativo buscando los puntos de corte que nos lleven a reglas más interesantes. En este caso, aplicaremos un método automático para la obtención de los puntos de corte que optimicen la separación de las clases.
+
+```{r}
+library(discretization)
+myDataset = cbind(subset(dataset, select = -impago), dataset[,"impago",drop = F])
+myDataset.rm.na = subset(myDataset, subset = !is.na(impago))
+cutp = disc.Topdown(myDataset.rm.na)$cutp
+
+
+dataset.discretized = myDataset
+for (i in 1:(ncol(myDataset)-1)) {
+  cutp[[i]][1] = -Inf
+  cutp[[i]][length(cutp[[i]])] = Inf
+  dataset.discretized[,i] = cut(myDataset[,i], cutp[[i]])
+}
+```
+
+
+## Obtención de las transacciones
+
+Una vez realizada la discretización del conjunto de datos, procedemos a la tranformación en transacciones.
+
+```{r}
+library(arules)
+transactions = as(subset(dataset.discretized, select = -impago), "transactions")
+```
+
+Ahora podemos ver un resumen de las transacciones.
+
+```{r}
+summary(transactions)
+image(transactions)
+```
+
+## Itemsets frecuentes
+
+Es conveniente comprobar con qué frecuencia aparece cada item. De este modo, podemos ver los items más relevantes.
+
+```{r}
+itemFrequencyPlot(transactions, support = 0.1, cex.names = 0.8)
+```
+
+Como podemos observar, los items más frecuentes son `deudaotro=(-Inf,12.8]` y `ingresos=(15.5, Inf]`, con un soporte de aproximadamente 0.98.
+
+Ahora podemos buscar qué itemsets son más frecuentes. Para ello, usaremos el método _apriori_.
+
+```{r}
+iBankloan = apriori(transactions, parameter = list(support = 0.1, target="frequent"))
+iBankloan = sort(iBankloan, by = "support")
+inspect(head(iBankloan, 20))
+
+myData = data.frame(itemset.size = as.factor(size(iBankloan)))
+ggplot(myData) + 
+  geom_bar(aes(itemset.size), fill = cbPalette[1]) +
+  ggtitle("Frecuencias absolutas de los tamaños de todos los itemsets")
+```
+
+
+## Itemsets maximales y cerrados
+A la vista de esta gráfica, comprobamos que los itemsets con 5 y 6 elementos son muy frecuentes. A continuación se mostrarán los 5 itemsets maximales con mayor soporte.
+
+```{r}
+imaxBankloan = iBankloan[is.maximal(iBankloan)]
+inspect(head(sort(imaxBankloan, by = "support"), 5))
+
+length(imaxBankloan)
+myData = data.frame(itemset.size = as.factor(size(imaxBankloan)))
+ggplot(myData) + 
+  geom_bar(aes(itemset.size), fill = cbPalette[3]) +
+  ggtitle("Frecuencias absolutas de los tamaño de los itemsets maximales")
+```
+
+Como podemos comprobar, los itemsets maximales no tienen un soporte demasiado elevado. También podemos contemplar los itemsets cerrados.
+
+```{r}
+icloBankloan = iBankloan[is.closed(iBankloan)]
+inspect(head(sort(icloBankloan, by = "support"), 5))
+
+length(icloBankloan)
+myData = data.frame(itemset.size = as.factor(size(icloBankloan)))
+ggplot(myData) + 
+  geom_bar(aes(itemset.size), fill = cbPalette[2]) +
+  ggtitle("Frecuencias absolutas de los tamaño de los itemsets cerrados")
+```
+
+A continuación se muestra un conteo de los itemsets de cada tipo.
+
+```{r}
+myData = data.frame(
+  frequent = length(iBankloan),
+  closed = length(icloBankloan),
+  maximal = length(imaxBankloan)
+)
+myData = melt(myData)
+ggplot(myData) + 
+  geom_col(aes(variable, value, fill = variable)) + 
+  scale_fill_manual(values=cbPalette) +
+  ggtitle("Frecuencias absolutas del número de itemsets de distintos tipos")
+```
+
+## Extracción de reglas
+Para obtener las reglas de asociación, podemos seguir el método apriori en una primera aproximación. El uso de este método es posible gracias a que el conjunto de datos es bastante pequeño y nos podemos permitir el lujo de usar una técnica computacionalmente muy costosa. En nuestro caso, buscaremos reglas con un soporte mínimo del 10% y una confianza mínima del 80%.
+
+```{r}
+rules = apriori(
+  transactions, 
+  parameter = list(
+    support    = 0.1,
+    confidence = 0.8,
+    minlen     = 2
+  )
+)
+
+summary(rules)
+```
+
+A continuación, ordenaremos las reglas por confianza, para mostrar las que mejor resultado producen con respecto a esta métrica.
+
+```{r}
+rules.byConfidence = sort(rules, by = "confidence")
+
+inspect(head(rules.byConfidence))
+quality(head(rules.byConfidence))
+```
+
+También podemos ordenarlas por lift, o cualquier otra métrica.
+
+```{r}
+rules.byLift = sort(rules, by = "lift")
+
+inspect(head(rules.byLift))
+quality(head(rules.byLift))
+```
+
+# Estudio de las reglas deseadas
+Vamos a observar las reglas cuyo lift sea superior a 1 y no contengan predicciones de morosidad en el antecedente.
+
+```{r}
+mySelectedRules = subset(
+  rules, 
+  subset = !lhs %in% c(
+    "morapred3=(0.38, Inf]", 
+    "morapred3=(-Inf,0.38]",
+    "morapred2=(0.429, Inf]",
+    "morapred2=(-Inf,0.429]",
+    "morapred1=(0.571, Inf]",
+    "morapred1=(-Inf,0.571]"
+    ) &
+    lift > 1
+)
+
+inspect(head(mySelectedRules))
+```
+
+Podemos eliminar las reglas redundantes haciendo lo siguiente:
+
+```{r}
+subsetMatrix = is.subset(mySelectedRules, mySelectedRules)
+subsetMatrix[lower.tri(subsetMatrix, diag = T)] = NA
+redundant = colSums(subsetMatrix, na.rm = T) >= 1
+rules.pruned = mySelectedRules[!redundant]
+
+inspect(head(rules.pruned))
+```
+
+
+## Medidas de interés adicionales
+Llegados a este punto, podemos decir que hemos encontrado regla que parecen muy interesante, ya que nos permiten predecir la morosidad a partir de otro parámetro. Sin embargo, será necesario estudiar algunas medidas adicionales para comprobar cómo de interesante pueden ser esta y otras reglas.
+
+```{r}
+myInterestMeasures = interestMeasure(
+  rules.pruned, 
+  measure = c(
+    "hyperConfidence", 
+    "leverage",
+    "phi",
+    "gini"
+  ),
+  transactions = transactions
+)
+
+quality(rules.pruned) = cbind(
+  quality(rules.pruned), 
+  myInterestMeasures
+)
+
+inspect(head(sort(rules.pruned, by = "gini")))
+```
+
+## Visualización
+Ahora podemos visualizar las reglas obtenidas con el paquete `arulesViz`. Existen varios tipos de visualización, que nos dan distintas perspectivas sobre las reglas encontradas.
+
+```{r}
+library(arulesViz)
+
+plot(rules)
+
+plot(rules.pruned[1:10], method="graph", control=list(type="items"))
+
+plot(rules.pruned, method="grouped")
+
+plot(
+  rules.pruned[1:10],
+  method="paracoord",
+  control = list(reorder = TRUE)
+)
+```
