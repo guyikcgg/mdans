@@ -1,36 +1,67 @@
 ---
 title: 'Minería de Datos: Aprendizaje no supervisado y detección de anomalías'
 author: "Cristian González Guerrero"
-date: "4 September 2017"
-output: pdf_document
+date: "7 September 2017"
+lang: es
+output: 
+  pdf_document:
+    toc: true # table of content true
+    toc_depth: 3  # upto three depths of headings (specified by #, ## and ###)
+    number_sections: true  ## if you want number sections at each table header
+bibliography: mdans-practic.bib
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-
-# Presentación y visualización de los datos
-
+# Presentación y visualización de los datos <a name="sec-visualization"></a>
+## Descripción de los datos
 El conjunto de datos `bankloan` puede ser abierto en R usando la siguiente instrucción.
 ```{r}
 dataset = read.csv("data/bankloan-spss.csv", sep = ";", dec = ",")
-dataset$impago = as.factor(dataset$impago)
 ```
 
 Este conjunto de datos recoje 850 casos de clientes de un banco que piden préstamos,
-incluyendo el hecho de que hayan pagado o no.
+incluyendo el hecho de que hayan incurrido en impago.
 Se incluyen datos personales y salariales. También se incluyen datos estimados de probabilidad de impago.
+
+En este conjunto de datos, las primeras 700 filas corresponden a clientes a los que
+previamente se les ha dado un préstamo. Las últimas 150 filas se corresponden a
+clientes que el banco necesita clasificar en función del riesgo de impago [@bankloan-dataset].
 
 Como puede comprobarse con el siguiente código, el conjunto de datos presenta 850 filas y 12 columnas, lo que se corresponde a 850 observaciones de 12 variables.
 
 ```{r}
 dim(dataset)
+```
+
+Puesto que se trata de un conjunto de datos exportado desde SPSS, será necesario dotarlo de la estructura pertinente. Esta estructura se ha consultado en [@bankloan-dataset], después de abrir el conjunto de datos del fichero `Loan_ROC.sav`.
+
+```{r}
+dataset$educ = factor(
+  dataset$educ,
+  labels = c(
+    "Did not complete high school",
+    "High school degree",
+    "Some college",
+    "College degree",
+    "Post-undergraduate degree"
+  )
+)
+dataset$impago = factor(
+  dataset$impago,
+  labels = c(
+    "No",
+    "Yes"
+  )
+)
 
 str(dataset)
 ```
 
-También podemos ver que todas las variables son de tipo numérico. En concreto, hay 6 variables enteras y 6 variables que toman valores continuos.
+
+Ahora vemos que la mayor parte de las variables es de tipo numérico. En concreto, hay 4 variables enteras y 6 variables que toman valores continuos. Las 2 variables restantes son categóricas.
 
 ```{r}
 data.types = sapply(dataset, class)
@@ -67,43 +98,92 @@ A continuación comprobamos si existen valores perdidos en nuestro conjunto de d
 
 ```{r}
 data.frame(
-  missing.values = colSums(is.na(dataset)), 
-  proportion = colSums(is.na(dataset)/nrow(dataset))
+  missing.values = colSums(is.na(dataset))
 )
 ```
 
-Podemos comprobar que hay 150 valores perdidos en la variable impago, lo que supone un 17.65% de los datos.
+Podemos comprobar que los únicos valores perdidos son los 150 registros que deben clasificarse, siguiendo las instrucciones del enunciado.
 
+## Visualización de los datos
 A continuación se muestra un gráfico con las densidades de probabilidad de cada variable.
 
 ```{r}
 library(reshape)
 library(ggplot2)
 
+# Useful functions
+subset.numeric.dt = function(df) {
+  return(
+    df[,sapply(df, class) != "factor", drop = F]
+  )
+}
+subset.numeric.cl = function(df) {
+  return(
+    df$impago
+  )
+}
+subset.numeric    = function(df) {
+  return(cbind(
+    subset.numeric.dt(df),
+    impago = df$impago
+  ))
+}
+subset.factor = function(df) {
+  return(
+    df[,sapply(df, class) == "factor", drop = F]
+  )
+}
+
+# Color blind palette
 cbPalette = c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
-myData = melt.data.frame(dataset)
-
+# Plot numeric data
+myData = melt.data.frame(
+  subset.numeric.dt(dataset)
+)
 ggplot(myData) +
   geom_density(aes(value, fill = variable), alpha = 0.5) +
   facet_wrap(~variable, scales = "free") +
-  ggtitle("Distribución de frecuencias de cada variable")
+  ggtitle("Distribución de frecuencias de las variables numéricas")
+
+# Plot categorical data
+myData = melt.data.frame(
+  subset.factor(dataset),
+  id.vars = "impago"
+)
+ggplot(myData) +
+  geom_bar(aes(value, fill = variable), alpha = 0.8) +
+  coord_flip() +
+  facet_wrap(~variable, scales = "free") +
+  ggtitle("Distribución de frecuencias de las variables categóricas")
 ```
 
 
 La variable impago es especialmente interesante, ya que el objetivo final de nuestro trabajo será tratar de averiguar qué clientes cometerán impago.
 
 ```{r}
+# Plot numeric variables
 myData = melt.data.frame(
-  dataset,
+  subset.numeric(dataset),
   id.vars = "impago"
 )
-
 ggplot(myData) +
   geom_freqpoly(aes(value, color = impago), bins = 20) +
   facet_wrap(~variable, scales = "free", ncol = 4) +
   ggtitle("Distribución de frecuencias de cada variable, en función del impago")
 
+# Plot categorical variables
+myData = melt.data.frame(
+  subset.factor(dataset),
+  id.vars = "impago"
+)
+ggplot(myData) +
+  geom_bar(aes(value, fill = impago), position = "dodge") +
+  coord_flip() +
+  facet_wrap(~variable, scales = "free", ncol = 4) +
+  ggtitle("Distribución de frecuencias de cada variable, en función del impago")
+
+# Plot output variable frequencies
 ggplot(dataset) +
   geom_bar(aes(impago, fill = impago)) +
   ggtitle("Frecuencias absolutas de la variable impago")
@@ -114,6 +194,19 @@ Como podemos observar, la mayor parte de los casos estudiados no tiene impagos. 
 Habrá que buscar qué relación tienen estos impagos con el resto de variables, para ello aplicaremos técnicas de aprendizaje no supervisado.
 
 
+# Clustering
+
+
+
+
+
+
+
+
+
+
+# Detección de anomalías
+
 # Reglas de asociación
 
 ## Visualización de las distintas clases
@@ -121,6 +214,10 @@ Habrá que buscar qué relación tienen estos impagos con el resto de variables,
 En primer lugar, visualizaremos mejor los datos con unos diagramas de cajas con bigotes.
 
 ```{r}
+myData = melt.data.frame(
+  subset.numeric(dataset),
+  id.vars = "impago"
+)
 ggplot(myData) +
   geom_boxplot(aes(impago, value, fill = impago)) +
   facet_wrap(~variable, scales = "free") +
@@ -137,17 +234,17 @@ Este paso es crucial, y los valores elegidos aquí serán determinantes para el 
 
 ```{r}
 library(discretization)
-myDataset = cbind(subset(dataset, select = -impago), dataset[,"impago",drop = F])
-myDataset.rm.na = subset(myDataset, subset = !is.na(impago))
+dataset = cbind(subset(dataset, select = -impago), dataset[,"impago",drop = F])
+myDataset.numeric = subset.numeric(dataset)
+myDataset.rm.na = myDataset.numeric[1:700, ]
 cutp = disc.Topdown(myDataset.rm.na)$cutp
 
 
-dataset.discretized = myDataset
-for (i in 1:(ncol(myDataset)-1)) {
-  cutp[[i]][1] = -Inf
-  cutp[[i]][length(cutp[[i]])] = Inf
-  dataset.discretized[,i] = cut(myDataset[,i], cutp[[i]])
+dataset.discretized = myDataset.rm.na
+for (i in 1:(ncol(myDataset.rm.na)-1)) {
+  dataset.discretized[,i] = cut(myDataset.rm.na[,i], cutp[[i]], include.lowest = T)
 }
+dataset.discretized = cbind(dataset[1:700,"educ",drop=F], dataset.discretized)
 ```
 
 
@@ -157,14 +254,14 @@ Una vez realizada la discretización del conjunto de datos, procedemos a la tran
 
 ```{r}
 library(arules)
-transactions = as(subset(dataset.discretized, select = -impago), "transactions")
+transactions = as(dataset.discretized, "transactions")
 ```
 
 Ahora podemos ver un resumen de las transacciones.
 
 ```{r}
 summary(transactions)
-image(transactions)
+# image(transactions)
 ```
 
 ## Itemsets frecuentes
@@ -268,20 +365,16 @@ quality(head(rules.byLift))
 ```
 
 # Estudio de las reglas deseadas
-Vamos a observar las reglas cuyo lift sea superior a 1 y no contengan predicciones de morosidad en el antecedente.
+Vamos a observar las reglas cuyo lift sea superior a 2 o contengan información sobre el impago en el consecuente. Así podremos explorar reglas que nos lleven a predecir el impago, así como otras reglas interesantes.
 
 ```{r}
 mySelectedRules = subset(
   rules, 
-  subset = !lhs %in% c(
-    "morapred3=(0.38, Inf]", 
-    "morapred3=(-Inf,0.38]",
-    "morapred2=(0.429, Inf]",
-    "morapred2=(-Inf,0.429]",
-    "morapred1=(0.571, Inf]",
-    "morapred1=(-Inf,0.571]"
-    ) &
-    lift > 1
+  subset = rhs %in% c(
+    "impago=Yes",
+    "impago=No"
+  ) |
+  lift > 2 
 )
 
 inspect(head(mySelectedRules))
@@ -330,13 +423,17 @@ library(arulesViz)
 
 plot(rules)
 
-plot(rules.pruned[1:10], method="graph", control=list(type="items"))
+plot(rules.pruned[1:11], method="graph", control=list(type="items"))
 
-plot(rules.pruned, method="grouped")
-
-plot(
-  rules.pruned[1:10],
-  method="paracoord",
-  control = list(reorder = TRUE)
-)
+# plot(rules.pruned, method="grouped")
+# 
+# plot(
+#   rules.pruned[1:10],
+#   method="paracoord",
+#   control = list(reorder = TRUE)
+# )
 ```
+
+Como podemos comprobar en el gráfico relacional, existen relaciones muy interesantes que son autoexplicativas. En concreto, parece que los predictores de morosidad son bastante efectivos, ya que existe una relación con un amplio soporte entre que los predictores tengan un valor bajo y que no se hayan producido impagos. Asímismo, hay una fuerte relación (com poco soporte, pero mucho lift) entre un valor alto de `morapred1` y que se produzcan impagos. Otra regla que puede ser de interés  es que tener un valor alto en la variable `empleo` parece estar relacionado con no incurrir a impago.
+
+# Bibliografía
