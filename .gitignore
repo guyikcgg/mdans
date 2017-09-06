@@ -2,3 +2,5 @@ old
 *.pdf
 *~
 .Rproj.user
+*.pdf_tex
+*.bak
