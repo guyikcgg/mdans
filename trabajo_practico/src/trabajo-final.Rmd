@@ -200,6 +200,7 @@ Habrá que buscar qué relación tienen estos impagos con el resto de variables,
 # Clustering
 Realizaremos varios ejercicios de clustering con el set de datos `bankloan`, probando distintas técnicas y comparando los resultados. Para ello, usaremos tres programas diferentes.
 
+
 ## KNIME
 KNIME es software libre y puede usarse de forma totalmente libre y gratuita.
 
@@ -362,6 +363,7 @@ A continuación se representan gráficamente los resultados obtenidos por el clu
 \includegraphics[width=1\textwidth]{img/knime/cluster-scatterplot-after-hierarchical2.svg.png}
 
 
+
 ## PSPP
 Puesto que SPSS es un software privativo con un coste inasequible para un estudiante o una pequeña empresa, se ha decidido realizar la práctica con un clon libre que forma parte del proyecto GNU: PSPP.
 
@@ -381,11 +383,293 @@ PSPP dispone de algunas opciones desde su interfaz gráfica, aunque es más pote
 
 \includegraphics[width=1\textwidth]{img/pspp/pspp-cluster-results.png}
 
+
+
 ## R/RStudio
+En esta sección trabajaremos los métodos tratados anteriormente a través de RStudio.
+
+### Agrupamiento jerárquico
+Comenzaremos con el agrupamiento jerárquico.
+
+En primer lugar, será necesario quedarnos sólo con los datos numéricos, prescindiendo de la variable de clase. También habrá que cargar las bibliotecas que se van a usar para realizar los distintos cálculos y plots de clustering.
+
+```{r jerarquico-normalizado_1}
+library(cluster)
+library(fpc)
+dataset.numeric.dt = subset.numeric.dt(dataset)
+dataset.numeric.cl = subset.numeric.cl(dataset)
+```
+
+A continuación, procederemos a calcular e clustering jerárquico, por el método de Ward, distancia euclídea. Este es el resultado obtenido:
+
+```{r jerarquico-normalizado_2}
+hc = hclust(dist(dataset.numeric.dt), method="ward.D2")
+hc
+```
+
+Ahora podemos representar gráficamente los resultados con un dendrograma. Agruparemos los resultados en 5 clusters y exploraremos algunas medidas de bondad, como el coeficiente de silueta.
+
+```{r jerarquico-normalizado_3}
+plot(hc, labels = rep("", nrow(dataset.numeric.dt)))
+rect.hclust(hc, k = 5)
+
+# Agrupamiento
+group = cutree(hc, k=5)
+
+# Medidas de bondad de agrupamiento: coeficiente de silueta
+plotcluster(dataset.numeric.dt, group)
+shi = silhouette(group, dist(dataset.numeric.dt))
+plot(shi, col = 1:2)
+
+# Otras medidas de bondad
+cluster.stats(
+  dist(dataset.numeric.dt[1:700,]),
+  group[1:700],
+  alt.clustering = as.integer(dataset.numeric.cl[1:700])
+)
+```
 
 
+### Agrupamiento por k-medias normalizadas
+El uso de las k-medias requiere normalizar los atributos antes de ser aplicado.
+
+```{r kmedias-normalizadas_1}
+dataset.numeric.dt.norm = dataset.numeric.dt
+for (j in 1:ncol(dataset.numeric.dt)) {
+  x = dataset.numeric.dt[,j] 
+  v = (x-mean(x)) / sqrt(var(x))
+  dataset.numeric.dt.norm[,j] = v
+}
+```
+
+Una vez normalizados los datos, podemos aplicar kmeans.
+
+```{r kmedias-normalizadas_2}
+kmeans.result = kmeans(dataset.numeric.dt.norm, 2)
+kmeans.result
+
+table(dataset.numeric.cl[1:700], kmeans.result$cluster[1:700])
+```
+
+Ahora podemos visualizar los resultados obtenidos con algunas gráficas.
+
+```{r kmedias-normalizadas_3}
+plot(
+  dataset.numeric.dt.norm[,c("morapred1","morapred2")], 
+  col = kmeans.result$cluster
+)
+points(
+  kmeans.result$centers[,c("morapred1","morapred2")],
+  col = 3:4,
+  pch = 8,
+  cex = 2
+)
+x = kmeans.result$cluster
+plotcluster(dataset.numeric.dt.norm, x)
+```
+
+Al igual que hemos hecho con el clustering jerárquico, tendremos que realizar un análisis de bondad.
+
+```{r kmedias-normalizadas_4}
+shi = silhouette(kmeans.result$cluster, dist(dataset.numeric.dt.norm))
+plot(shi, col=1:2)
+
+group = kmeans.result$cluster
+cluster.stats(
+  dist(dataset.numeric.dt.norm[1:700,]),
+  group[1:700],
+  alt.clustering = as.integer(dataset.numeric.cl[1:700])
+)
+```
 
 
+### Agrupamiento por k-medoides normalizados
+A continuación realizaremos un agrupamiento por k-medoides con los datos que previamente habíamos normalizado.
+
+```{r medoides-normalizado}
+#Empezamos con k-medoides clasico (pam) con 2 clases. El gr?fico nos da tambien el coeficiente de silueta
+pam.result = pam(dataset.numeric.dt.norm, 2)
+table(dataset.numeric.cl[1:700], pam.result$cluster[1:700])
+
+plot(pam.result)
+
+group = pam.result$cluster
+cluster.stats(
+  dist(dataset.numeric.dt.norm[1:700,]),
+  group[1:700],
+  alt.clustering = as.integer(dataset.numeric.cl[1:700])
+)
+```
+
+
+### Agrupamiento por k-medoides normalizados con valor óptimo de grupos
+También podemos usar k-medoides usando el varlor óptimo de grupos ofrecido por la función.
+
+```{r modoides-normalizado-valor-optimo-grupos}
+#Pruebo con k-medoides optimo numero de grupos
+pamk.result = pamk(dataset.numeric.dt.norm)
+#pamk.result
+
+pamk.result$pamobject$medoids
+table(dataset.numeric.cl[1:700], pamk.result$pamobject$clustering[1:700])
+
+plot(pamk.result$pamobject)
+
+identical(pamk.result$pamobject$clustering, pam.result$cluster)
+```
+
+Como podemos observar, el valor óptimo de clusters encontrado es 2, por lo que los resultados van a ser idénticos a los obtenidos anteriormente con k-medoides.
+
+### Agrupamiento con DBSCAN
+Lo siguiente que haremos será probar un agrupamiento por DBSCAN.
+
+```{r dbscan}
+library(fpc)
+
+ds = dbscan(dataset.numeric.dt.norm, eps = 1.5, MinPts = 5)
+table(ds$cluster[1:700], dataset.numeric.cl[1:700])
+
+plot(ds, dataset.numeric.dt.norm[c("morapred1", "morapred2")])
+
+x = table(ds$cluster[1:700], dataset.numeric.cl[1:700])
+nc = length(x[,1])
+nc
+shi = silhouette(ds$cluster, dist(dataset.numeric.dt.norm))
+plot(shi, col = 1:nc)
+```
+
+Como podemos comprobar, DBSCAN ha encontrado dos clusters diferentes. Como pasaba en las pruebas con KNIME, parece que el ruido está asociado a la clase impago, mientras que el resto de clusters están asociados a la otra clase.
+
+### Agrupamiento con k-means difusas normalizado
+Seguidamente, trabajaremos con un modelo basado en k-medias difusas.
+
+```{r fuzzymeans-normalizado}
+fuzzy.result = fanny(dataset.numeric.dt.norm, 2, memb.exp = 1.4)
+
+str(fuzzy.result)
+head(fuzzy.result$membership, 20)
+
+table(fuzzy.result$clustering[1:700], dataset.numeric.cl[1:700])
+plot(fuzzy.result)
+
+group = fuzzy.result$clustering
+cluster.stats(
+  dist(dataset.numeric.dt.norm[1:700,]),
+  group[1:700],
+  alt.clustering = as.integer(dataset.numeric.cl[1:700])
+)
+```
+
+Como podemos ver, ahora en vez de un cluster, se tiene un grado de pertenencia a cada cluster. Esto es útil, ya que permite ajustar el umbral y calcular momentos estadísticos interesantes como el *Area Under the Curve* (AUC) de la curva ROC.
+
+### Agrupamiento jerárquico con varias funciones de distancia
+A continuación usaremos dos funciones de distancia distintas: una para datos personales y otra para datos de situación económica. Empezaremos con el agrupamiento jerárquico.
+
+El primer paso será separar los datos personales de los datos de situación económica en dos *data frames* diferentes.
+
+```{r distancias-jerarquico_1}
+dataset.numeric.dt.norm.personal = data.frame(
+  subset(
+    dataset.numeric.dt.norm,
+    select = c(edad, direccion)
+  ),
+  educ = as.integer(dataset$educ)
+)
+dataset.numeric.dt.norm.economic = subset(
+  dataset.numeric.dt.norm,
+  select = c(empleo, ingresos, deudaingr, deudacred, deudaotro)
+)
+```
+
+A continuación, calcularemos las distancias euclída y binaria entre las variables ya seaparadas. Tendremos que calcular la distancia final como la media entre estas dos distancias.
+
+```{r distancias-jerarquico_2}
+# Calculamos distancias distintas
+dist1 = dist(dataset.numeric.dt.norm.economic)
+dist2 = dist(dataset.numeric.dt.norm.personal, method="binary")
+
+# Calculamos distancia ponderada y Cluster
+dista = (dist1+dist2)/2
+```
+
+Una vez hecho esto, podremos proceder al clustering, como hicimos anteriormente.
+
+```{r distancias-jerarquico_3}
+h = hclust(dista, method="ward.D2")
+h
+plot(h, labels = rep("", length(h$labels)))
+rect.hclust(h, k = 5)
+grupo = cutree(h, k=5)
+```
+
+De nuevo, practicaremos un análisis de bondad.
+
+```{r distancias-jerarquico_4}
+# Análsis de bondad, usamos solo 150 valores para dibujar
+
+idx = sample(1:700, 150)
+
+plotcluster(dataset.numeric.dt.norm.personal[idx,], grupo[idx])
+plotcluster(dataset.numeric.dt.norm.economic[idx,], grupo[idx])
+
+d1 = dist(dataset.numeric.dt.norm.personal[idx,])
+d2 = dist(dataset.numeric.dt.norm.economic[idx,])
+d3 = (d1+d2)/2
+
+shi = silhouette(grupo[idx], d3)
+plot(shi, col=1:5)
+
+cluster.stats(dista, grupo)
+```
+
+Como podemos observar, los datos económicos nos proporcionan más información sobre la posibilidad de incurrir en impago que los datos personales.
+
+### Agrupamiento por k-medias con distintas funciones de distancia
+Podemos repetir el procedimiento usado para medir distancias distintas con las particiones jerárquicas y aplicar ahora k-medias.
+
+```{r distancias-k-medias_1}
+kmeans.result=kmeans(dista, 2)
+
+grupo = kmeans.result$cluster
+```
+
+De nuevo, realizaremos un anáiliss de bondad sobre los resultados obtenidos
+
+```{r distancias-k-medias_2}
+idx = sample(1:700, 250)
+
+plotcluster(dataset.numeric.dt.norm.personal[idx,], grupo[idx])
+plotcluster(dataset.numeric.dt.norm.economic[idx,], grupo[idx])
+
+d1 = dist(dataset.numeric.dt.norm.personal[idx,])
+d2 = dist(dataset.numeric.dt.norm.economic[idx,])
+d3 = (d1+d2)/2
+
+shi = silhouette(grupo[idx],d3)
+plot(shi, col=1:5)
+
+cluster.stats(dista,grupo)
+```
+
+
+### Agrupamiento por k-medoides con distintas funciones de distancia
+Realizaremos el mismo proceso ahora, pero esta vez usando k-medoides.
+
+```{r distancias-k-medoides}
+pam.result = pam(dista, 2)
+
+grupo = pam.result$clustering
+
+plotcluster(dataset.numeric.dt.norm.personal[idx,],grupo[idx])
+plotcluster(dataset.numeric.dt.norm.economic[idx,],grupo[idx])
+
+shi = silhouette(grupo[idx],d3)
+plot(shi,col=1:5)
+
+cluster.stats(d3,grupo[idx])
+```
+
+Como podemos comprobar, cada uno de los métodos produce un agrupamiento distinto. Esto hace que el problema de agrupamiento tenga múltiples soluciones y que sea necesario un estudio minucioso de las relaciones entre las distintas variables para elegir el modelo que mejor se ajuste. Como primera aproximación, pueden tomarse las medidas de bondad obtenidas para comparar qué método es mejor siguiendo alguna de ellas.
 
 
 
