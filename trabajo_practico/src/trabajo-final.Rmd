@@ -198,6 +198,33 @@ Habrá que buscar qué relación tienen estos impagos con el resto de variables,
 
 
 # Clustering
+Realizaremos varios ejercicios de clustering con el set de datos `bankloan`, probando distintas técnicas y comparando los resultados. Para ello, usaremos tres programas diferentes.
+
+## KNIME
+KNIME es software libre y puede usarse de forma totalmente libre y gratuita.
+
+El primer ejercicio será instalar KNIME y familiarizarnos con esta herramienta, para lo que probaremos a crear un nuevo proyecto e insertar unos cuantos bloques, aprendiendo el flujo de trabajo del programa.
+
+Una vez hecho esto, vamos a abrir nuestro conjunto de datos. Para ello será necesario un bloque del tipo `File Reader`, pues los datos proporcionados usan la *coma* como separador decimal. Una vez configurado este bloque, será conveniente normalizar los datos numéricos para que todas las columnas estén dentro de un rango razonable. Esto es fundamental en los problemas de clustering, donde siempre se miden distancias entre los puntos a etiquetar. En nuestro caso, nos hemos decantado por una normalización *Z-Score Normalization (Gaussian)*, para evitar posibles problemas por la presencia de anomalías.
+
+A continuación, será necesario un bloque para clustering. Comenzaremos usando un bloque `k-Means`, para usar dicho método en una primera aproximación.
+
+También añadiremos algunos bloques para la visualización de los datos. En concreto, será necesario un bloque del tipo `Color Manager` para dar colores distintos a los diferentes clusters, así como un nodo `Scatter Plot` para realizar un diagrama de dispersión (o nube de puntos). De igual forma, añadiremos un bloque `Interactive Table` para facilitar el acceso a una tabla con los resultados del clustering.
+
+Finalmente, comentar que hemos añadido algunos bloques más con diversos propósitos:
+
+  * **`Numeric Binner`** con el objetivo de convertir la variable numérica `impago` en una variable de tipo categórica que tomara únicamente dos valores.
+  * **`Row Filter`** con el objetivo de eliminar las filas con valores perdidos, que no son interesantes en la evaluación de los resultados.
+  * **`String Replacer`** con el objetivo de hacer coincidir las etiquetas de los clusters generados con las etiquetas de la variable `impago`
+  * **`Entropy Scorer`** con el objetivo de tener una medida de bondad del ajuste del modelo generado basada en la entropía.
+  * **`Scorer`** con el objetivo de obtener una tabla de contingencia de la clasificación, así como las medidas que pueden derivarse de esta.
+
+A continuación se presenta el diagrama de bloques generado finalmente.
+
+\graphicspath{{img/knime/}}
+\includesvg{img/knime/cluster-scheme2-k-means}
+
+
 
 
 
@@ -210,10 +237,11 @@ Habrá que buscar qué relación tienen estos impagos con el resto de variables,
 
 # Detección de anomalías
 
+
+
 # Reglas de asociación
 
 ## Visualización de las distintas clases
-
 En primer lugar, visualizaremos mejor los datos con unos diagramas de cajas con bigotes.
 
 ```{r}
