@@ -207,7 +207,10 @@ El primer ejercicio será instalar KNIME y familiarizarnos con esta herramienta,
 
 Una vez hecho esto, vamos a abrir nuestro conjunto de datos. Para ello será necesario un bloque del tipo `File Reader`, pues los datos proporcionados usan la *coma* como separador decimal. Una vez configurado este bloque, será conveniente normalizar los datos numéricos para que todas las columnas estén dentro de un rango razonable. Esto es fundamental en los problemas de clustering, donde siempre se miden distancias entre los puntos a etiquetar. En nuestro caso, nos hemos decantado por una normalización *Z-Score Normalization (Gaussian)*, para evitar posibles problemas por la presencia de anomalías.
 
-A continuación, será necesario un bloque para clustering. Comenzaremos usando un bloque `k-Means`, para usar dicho método en una primera aproximación.
+A continuación, será necesario un bloque para clustering.
+
+### K-Means
+Comenzaremos usando un bloque `k-Means`, para usar dicho método en una primera aproximación.
 
 También añadiremos algunos bloques para la visualización de los datos. En concreto, será necesario un bloque del tipo `Color Manager` para dar colores distintos a los diferentes clusters, así como un nodo `Scatter Plot` para realizar un diagrama de dispersión (o nube de puntos). De igual forma, añadiremos un bloque `Interactive Table` para facilitar el acceso a una tabla con los resultados del clustering.
 
@@ -222,16 +225,80 @@ Finalmente, comentar que hemos añadido algunos bloques más con diversos propó
 A continuación se presenta el diagrama de bloques generado finalmente.
 
 \graphicspath{{img/knime/}}
+
 \includesvg{img/knime/cluster-scheme2-k-means}
 
+La configuración proporcionada al bloque de clustering es la siguiente:
+
+  * number of clusters: 2
+  * max. number of iterations: 99
+  * included variables: *todas menos* `impago`
+
+Para tener una aproximación gráfica de los resultados obtenidos por k-Means, tendremos que comparar gráficamente los datos originales con los resultados obtenidos.
+
+La siguiente figura muestra los puntos del conjunto de datos original coloreados según la variable `impago`. En rojo, se muestran los clientes que no han incurrido en impago; en azul, los que han cometido impago; y en negro, los clientes que todavía no han recibido el crédito. En el eje $x$ se ha representado la variable `morapred1`, mientras que en la variable $y$ se ha representado `morapred2`. La elección de estas variables se debe a que tienen una relación muy fuerte con la variable `impago`.
+
+\includesvg{img/knime/cluster-scatterplot-before-k-means}
+
+A continuación se representan gráficamente los resultados obtenidos por el clustering. Los colores de los puntos han sido asignados en función del cluster.
+
+\includesvg{img/knime/cluster-scatterplot-after-k-means}
+
+Como puede observarse, los resultados obtenidos se distribuyen de una forma parecida a los datos iniciales, por lo que ésta parece una aproximación bastante buena. Podemos observar la calidad de la solución obtenida con los bloques `Entropy Scorer` y `Scorer`. A continuación se muestran los resultados medidos.
+
+\includesvg{img/knime/cluster-quality-k-means}
+\includesvg{img/knime/cluster-score-k-means}
 
 
+### DBSCAN
+Probaremos ahora con otro tipo de clustering, como es DBSCAN.
+
+A continuación se presenta el diagrama de bloques usado con la nueva configuración.
+
+\includesvg{img/knime/cluster-scheme2-dbscan}
+
+Tras probar distintos parámetros de configuración, los que han conseguido mejores resultados son:
+
+  * distance selection: Euclidean
+  * epsilon: 1.5
+  * String Replacer:
+    * Noise \rightarrow Yes
+    * cluster_? \rightarrow No
+
+A continuación se representan gráficamente los resultados obtenidos por el clustering con DBSCAN. Los distintos colores representan los clusters encontrados. En gris se representa el ruido. Los ejes son los mismos usados para las otras figuras.
+
+\includesvg{img/knime/cluster-scatterplot-after-dbscan}
+
+Al observar esta distribución parece que los resultados son bastante buenos. A continuación se muestran los resultados medidos con los bloques `Entropy Scorer` y `Scorer`.
+
+\includesvg{img/knime/cluster-quality-dbscan}
+\includesvg{img/knime/cluster-score-dbscan}
 
 
+### k-Medoides
+Vamos a trabajar ahora con otra aproximación. En este caso, usaremos k-Medoides.
+
+A continuación se presenta el diagrama de bloques usado con la nueva configuración.
+
+\includesvg{img/knime/cluster-scheme2-k-medoids}
+
+Los parámetros de configuración ensayados han sido:
+
+  * distance selection: Mahalanobis
+  * distance variables: `morapred1`, `morapred2`, `morapred3`
+  * $k$: 2
+
+A continuación se representan gráficamente los resultados obtenidos por el clustering con k-Medoids. Cada cluster se ha rerpresentado de un color diferente.Los distintos colores representan los clusters encontrados. En gris se representa el ruido. Los ejes son los mismos usados para las otras figuras.
+
+\includesvg{img/knime/cluster-scatterplot-after-k-medoids}
+
+Al observar esta distribución parece que no se ha conseguido encontrar un modelo que se ajustara correctamente a los datos. A continuación se muestran los resultados medidos con los bloques `Entropy Scorer` y `Scorer`.
+
+\includesvg{img/knime/cluster-quality-k-medoids}
+\includesvg{img/knime/cluster-score-k-medoids}
 
 
-
-
+## Clustering jerárquico
 
 
 
