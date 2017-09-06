@@ -1,0 +1,6 @@
+#!/bin/sh
+
+for file in knime/*.svg
+do
+     /usr/bin/inkscape -z -f "${file}" -w 1500 -e "${file}.png"
+done
