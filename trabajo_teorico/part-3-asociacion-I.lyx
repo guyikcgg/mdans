@@ -80,6 +80,158 @@ Reglas de asociación I
 Definición de regla de asociación
 \end_layout
 
+\begin_layout Standard
+Las reglas de asociación son una técnica muy potente en el ámbido de aprendizaje
+ no supervisado.
+ Esta técnica permite obtener conocimiento interesante a partir de grandes
+ bases de datos.
+ Además, también permiten realizar tareas de clasificación, con modelos
+ que pueden ajustarse tan bien como los árboles de decisión 
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+cn
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+En sus orígenes, las reglas de asociación se usaron para extraer relaciones
+ interesantes en compras de supermercado.
+ De ahí que la terminología y los ejemplos clásicos tengan una gran relación
+ con este ámbito.
+\end_layout
+
+\begin_layout Standard
+Formalmente, una regla de asociación (
+\emph on
+association rule
+\emph default
+) puede definirse como una relación entre un antecedente 
+\begin_inset Formula $X$
+\end_inset
+
+ (
+\emph on
+antecedent
+\emph default
+) y un consecuente 
+\begin_inset Formula $Y$
+\end_inset
+
+ (
+\emph on
+consequent
+\emph default
+), de la forma
+\begin_inset Formula 
+\[
+X\rightarrow Y
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+donde ambas partes están incluidas en un conjunto 
+\begin_inset Formula $I$
+\end_inset
+
+ de 
+\begin_inset Formula $n$
+\end_inset
+
+ elementos denominados 
+\emph on
+items
+\emph default
+ 
+\begin_inset Formula 
+\[
+I=\{i_{1},i_{2},...,i_{n}\}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Además, ningún elemento del consecuente puede estar incluido en el antecedente
+\begin_inset Formula 
+\[
+X,Y\subseteq I
+\]
+
+\end_inset
+
+
+\begin_inset Formula 
+\[
+X\cap Y=\emptyset
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Estas reglas se obtienen a partir de relaciones encontradas en la base de
+ datos de 
+\begin_inset Formula $m$
+\end_inset
+
+ transacciones 
+\begin_inset Formula $D$
+\end_inset
+
+ (
+\emph on
+transaction database
+\emph default
+), que es un conjunto de la forma 
+\begin_inset Formula 
+\[
+D=\{t_{1},t_{2},...,t_{m}\}
+\]
+
+\end_inset
+
+cuyos elementos también son subconjutnos de 
+\begin_inset Formula $I$
+\end_inset
+
+
+\begin_inset Formula 
+\[
+t_{i}\subseteq I\forall i
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Dentro de esta terminología, hay que distinguir dos tipos de items, y, por
+ tanto, de transacciones:
+\end_layout
+
+\begin_layout Enumerate
+Listado de elementos de longitud variable
+\end_layout
+
+\begin_layout Enumerate
+Número determinado de atributos, con su correspondiente valor
+\end_layout
+
 \begin_layout Subsection
 Medidas clásicas de las reglas de asociación
 \end_layout
@@ -100,8 +252,17 @@ Generación de reglas
 Problemas abiertos
 \end_layout
 
-\begin_layout Subsection
-Aplicaciones
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+intro a part4
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \end_body
