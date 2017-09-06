@@ -290,7 +290,7 @@ Los parámetros de configuración ensayados han sido:
   * distance variables: `morapred1`, `morapred2`, `morapred3`
   * $k$: 2
 
-A continuación se representan gráficamente los resultados obtenidos por el clustering con k-Medoids. Cada cluster se ha rerpresentado de un color diferente.Los distintos colores representan los clusters encontrados. En gris se representa el ruido. Los ejes son los mismos usados para las otras figuras.
+A continuación se representan gráficamente los resultados obtenidos por el clustering con k-Medoids. Cada cluster se ha rerpresentado de un color diferente. Los ejes son los mismos usados para las otras figuras.
 
 \includegraphics[width=1\textwidth]{img/knime/cluster-scatterplot-after-k-medoids.svg.png}
 
@@ -301,7 +301,91 @@ Al observar esta distribución parece que no se ha conseguido encontrar un model
 \includegraphics[width=1\textwidth]{img/knime/cluster-score-k-medoids.svg.png}
 
 
-## Clustering jerárquico
+### Clustering jerárquico
+A continuación hemos llevado a cabo clustering jerárquico, que es una aproximación completamente distinta de clustering.
+
+A continuación se presenta el diagrama de bloques usado con la nueva configuración.
+
+\includegraphics[width=1\textwidth]{img/knime/cluster-scheme2-hierarchical.svg.png}
+
+Los parámetros de configuración que mejor resultado han conseguido son:
+
+  * distance function: Euclidean
+  * distance variables: `edad`, `empleo`, `direccion`, `ingresos`, `dedudaingr`, `morapred1`, `morapred2`, `morapred3`
+  * linkage type: AVERAGE
+  * number output cluster: 5
+  
+Estos parámetros han sido seleccionados observando el dendrograma y la distancia en función de k.
+
+\includegraphics[width=1\textwidth]{img/knime/cluster-hierarchical1-dendrogram.svg.png}
+
+\includegraphics[width=1\textwidth]{img/knime/cluster-hierarchical1-distance.svg.png}
+
+A continuación se representan gráficamente los resultados obtenidos por el clustering jerárquico. Cada cluster se ha rerpresentado de un color diferente. Los ejes son los mismos usados para las otras figuras.
+
+\includegraphics[width=1\textwidth]{img/knime/cluster-scatterplot-after-hierarchical.svg.png}
+
+Al observar esta distribución parece que no se ha conseguido encontrar un modelo que se ajustara correctamente a los datos. A continuación se muestran los resultados medidos con los bloques `Entropy Scorer` y `Scorer`.
+
+\includegraphics[width=1\textwidth]{img/knime/cluster-quality-hierarchical.svg.png}
+
+\includegraphics[width=1\textwidth]{img/knime/cluster-score-hierarchical.svg.png}
+
+
+### Clustering jerárquico con más de una función de distancia
+Vamos a tratar de mejorar el clustering jerárquico realizado anteriormente con el uso de dos funciones de distancia distintas: una para los datos personales y otro para los datos económicos.
+
+A continuación se presenta el diagrama de bloques usado con la nueva configuración.
+
+\includegraphics[width=1\textwidth]{img/knime/cluster-scheme2-hierarchical2.svg.png}
+
+Como puede comprobarse, se han usado bloques como `Column Splitter` y `Column Appender` para separar y volver a mezclar los atributos, `Create Bit Vector` y `Bit Vector Distances` para calcular distancias tipo bit, así como `Aggregated Distance` y `Hierarchical Clustering (DistMatrix)` para calcular la media de las distancias numérica y tipo bit y que la distancia resultante pueda ser usada en el proceso de clustering.
+
+Los parámetros ensayados han sido:
+
+  * numeric distance function: Euclidean
+  * numeric variables: `empleo`, `ingresos`, `dedudaingr`, `dedudacred`, `dedudaotro`, `morapred1`, `morapred2`, `morapred3`
+  * bit vector distance function: Tanimoto
+  * bit vector variables: `edad`, `educ`, `direccion`
+  * agregated distance: mean
+  * linkage type: Single Linkage
+  * number of clusters: 5
+  
+A continuación se muestran el dendrograma y la distancia en función de k.
+
+\includegraphics[width=1\textwidth]{img/knime/cluster-hierarchical2-dendrogram.svg.png}
+
+\includegraphics[width=1\textwidth]{img/knime/cluster-hierarchical2-distance.svg.png}
+
+A continuación se representan gráficamente los resultados obtenidos por el clustering jerárquico. Cada cluster se ha rerpresentado de un color diferente. Los ejes son los mismos usados para las otras figuras.
+
+\includegraphics[width=1\textwidth]{img/knime/cluster-scatterplot-after-hierarchical2.svg.png}
+
+
+## PSPP
+Puesto que SPSS es un software privativo con un coste inasequible para un estudiante o una pequeña empresa, se ha decidido realizar la práctica con un clon libre que forma parte del proyecto GNU: PSPP.
+
+PSPP soporta el formato `.sav` de los ficheros creados en SPSS. Así, es posible visualizar el valor que toman las variables al igual que su descripción.
+
+\includegraphics[width=1\textwidth]{img/pspp/PSPP-data-view.png}
+
+\includegraphics[width=1\textwidth]{img/pspp/pspp-variable-view.png}
+
+También es posible ver los comentarios del documento y de las variables.
+
+\includegraphics[width=1\textwidth]{img/pspp/pspp-document-comments.png}
+
+\includegraphics[width=1\textwidth]{img/pspp/pspp-variable-comments.png}
+
+PSPP dispone de algunas opciones desde su interfaz gráfica, aunque es más potente desde la línea de comandos. Usando la GUI es posible realizar clustering usando el método de k-Means. Estos son los resultados obtenidos.
+
+\includegraphics[width=1\textwidth]{img/pspp/pspp-cluster-results.png}
+
+## R/RStudio
+
+
+
+
 
 
 
