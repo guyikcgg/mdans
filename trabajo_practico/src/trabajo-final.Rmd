@@ -5,10 +5,10 @@ date: "7 September 2017"
 lang: es
 output: 
   pdf_document:
+    keep_tex: yes
+    number_sections: yes
     pandoc_args: --latex-engine-opt=--shell-escape
-    toc: true # table of content true
-    toc_depth: 3  # upto three depths of headings (specified by #, ## and ###)
-    number_sections: true  ## if you want number sections at each table header
+    toc: yes
 header-includes:
    - \usepackage{svg}
 bibliography: mdans-practic.bib
@@ -226,7 +226,7 @@ A continuación se presenta el diagrama de bloques generado finalmente.
 
 \graphicspath{{img/knime/}}
 
-\includesvg{img/knime/cluster-scheme2-k-means}
+\includegraphics[width=1\textwidth]{img/knime/cluster-scheme2-k-means.svg.png}
 
 La configuración proporcionada al bloque de clustering es la siguiente:
 
@@ -238,16 +238,17 @@ Para tener una aproximación gráfica de los resultados obtenidos por k-Means, t
 
 La siguiente figura muestra los puntos del conjunto de datos original coloreados según la variable `impago`. En rojo, se muestran los clientes que no han incurrido en impago; en azul, los que han cometido impago; y en negro, los clientes que todavía no han recibido el crédito. En el eje $x$ se ha representado la variable `morapred1`, mientras que en la variable $y$ se ha representado `morapred2`. La elección de estas variables se debe a que tienen una relación muy fuerte con la variable `impago`.
 
-\includesvg{img/knime/cluster-scatterplot-before-k-means}
+\includegraphics[width=1\textwidth]{img/knime/cluster-scatterplot-before-k-means.svg.png}
 
 A continuación se representan gráficamente los resultados obtenidos por el clustering. Los colores de los puntos han sido asignados en función del cluster.
 
-\includesvg{img/knime/cluster-scatterplot-after-k-means}
+\includegraphics[width=1\textwidth]{img/knime/cluster-scatterplot-after-k-means.svg.png}
 
 Como puede observarse, los resultados obtenidos se distribuyen de una forma parecida a los datos iniciales, por lo que ésta parece una aproximación bastante buena. Podemos observar la calidad de la solución obtenida con los bloques `Entropy Scorer` y `Scorer`. A continuación se muestran los resultados medidos.
 
-\includesvg{img/knime/cluster-quality-k-means}
-\includesvg{img/knime/cluster-score-k-means}
+
+
+\includegraphics[width=1\textwidth]{img/knime/cluster-score-k-means.svg.png}
 
 
 ### DBSCAN
@@ -255,24 +256,25 @@ Probaremos ahora con otro tipo de clustering, como es DBSCAN.
 
 A continuación se presenta el diagrama de bloques usado con la nueva configuración.
 
-\includesvg{img/knime/cluster-scheme2-dbscan}
+\includegraphics[width=1\textwidth]{img/knime/cluster-scheme2-dbscan.svg.png}
 
 Tras probar distintos parámetros de configuración, los que han conseguido mejores resultados son:
 
   * distance selection: Euclidean
   * epsilon: 1.5
   * String Replacer:
-    * Noise \rightarrow Yes
-    * cluster_? \rightarrow No
+    * Noise $\rightarrow$ Yes
+    * cluster_? $\rightarrow$ No
 
 A continuación se representan gráficamente los resultados obtenidos por el clustering con DBSCAN. Los distintos colores representan los clusters encontrados. En gris se representa el ruido. Los ejes son los mismos usados para las otras figuras.
 
-\includesvg{img/knime/cluster-scatterplot-after-dbscan}
+\includegraphics[width=1\textwidth]{img/knime/cluster-scatterplot-after-dbscan.svg.png}
 
 Al observar esta distribución parece que los resultados son bastante buenos. A continuación se muestran los resultados medidos con los bloques `Entropy Scorer` y `Scorer`.
 
-\includesvg{img/knime/cluster-quality-dbscan}
-\includesvg{img/knime/cluster-score-dbscan}
+\includegraphics[width=1\textwidth]{img/knime/cluster-quality-dbscan.svg.png}
+
+\includegraphics[width=1\textwidth]{img/knime/cluster-score-dbscan.svg.png}
 
 
 ### k-Medoides
@@ -280,7 +282,7 @@ Vamos a trabajar ahora con otra aproximación. En este caso, usaremos k-Medoides
 
 A continuación se presenta el diagrama de bloques usado con la nueva configuración.
 
-\includesvg{img/knime/cluster-scheme2-k-medoids}
+\includegraphics[width=1\textwidth]{img/knime/cluster-scheme2-k-medoids.svg.png}
 
 Los parámetros de configuración ensayados han sido:
 
@@ -290,12 +292,13 @@ Los parámetros de configuración ensayados han sido:
 
 A continuación se representan gráficamente los resultados obtenidos por el clustering con k-Medoids. Cada cluster se ha rerpresentado de un color diferente.Los distintos colores representan los clusters encontrados. En gris se representa el ruido. Los ejes son los mismos usados para las otras figuras.
 
-\includesvg{img/knime/cluster-scatterplot-after-k-medoids}
+\includegraphics[width=1\textwidth]{img/knime/cluster-scatterplot-after-k-medoids.svg.png}
 
 Al observar esta distribución parece que no se ha conseguido encontrar un modelo que se ajustara correctamente a los datos. A continuación se muestran los resultados medidos con los bloques `Entropy Scorer` y `Scorer`.
 
-\includesvg{img/knime/cluster-quality-k-medoids}
-\includesvg{img/knime/cluster-score-k-medoids}
+\includegraphics[width=1\textwidth]{img/knime/cluster-quality-k-medoids.svg.png}
+
+\includegraphics[width=1\textwidth]{img/knime/cluster-score-k-medoids.svg.png}
 
 
 ## Clustering jerárquico
