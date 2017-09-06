@@ -5,9 +5,12 @@ date: "7 September 2017"
 lang: es
 output: 
   pdf_document:
+    pandoc_args: --latex-engine-opt=--shell-escape
     toc: true # table of content true
     toc_depth: 3  # upto three depths of headings (specified by #, ## and ###)
     number_sections: true  ## if you want number sections at each table header
+header-includes:
+   - \usepackage{svg}
 bibliography: mdans-practic.bib
 ---
 
