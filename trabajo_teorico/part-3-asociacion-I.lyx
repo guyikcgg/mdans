@@ -73,7 +73,7 @@
 \begin_body
 
 \begin_layout Section
-Reglas de asociación I
+Reglas de asociación
 \end_layout
 
 \begin_layout Subsection
@@ -225,44 +225,1268 @@ Dentro de esta terminología, hay que distinguir dos tipos de items, y, por
 \end_layout
 
 \begin_layout Enumerate
-Listado de elementos de longitud variable
+Listado de elementos de longitud variable: no hay un número de atributos
+ determinado, sino que pueden aparecer un número variable de elementos en
+ cada transacción.
 \end_layout
 
 \begin_layout Enumerate
-Número determinado de atributos, con su correspondiente valor
+Número determinado de atributos, formando parejas 
+\emph on
+(atributo,valor)
+\emph default
+.
+\end_layout
+
+\begin_layout Standard
+En el primero de los casos, las transacciones y las reglas tienen una forma
+ como la del siguiente ejemplo:
+\end_layout
+
+\begin_layout Description
+transacción_1: pan, leche, mantequilla
+\end_layout
+
+\begin_layout Description
+transacción_2: pan, mermelada, mantequilla, magdalenas
+\end_layout
+
+\begin_layout Description
+transacción_3: leche, cereales
+\end_layout
+
+\begin_layout Description
+regla_1: pan 
+\begin_inset Formula $\rightarrow$
+\end_inset
+
+ mantequilla 
+\emph on
+y
+\emph default
+ mermelada
+\end_layout
+
+\begin_layout Description
+regla_2: leche
+\begin_inset Formula $\rightarrow$
+\end_inset
+
+ cereales
+\end_layout
+
+\begin_layout Standard
+En el segundo de los casos, en cambio, los itemsets y las reglas tienen
+ un formato más estricto:
+\end_layout
+
+\begin_layout Description
+transacción_1: (puesto,administrativo), (salario,alto), (estudios,medios)
+\end_layout
+
+\begin_layout Description
+transacción_2: (puesto,programador), (salario,medio), (estudios,medios)
+\end_layout
+
+\begin_layout Description
+transacción_3: (puesto,analista), (salario,alto), (estudios,superiores)
+\end_layout
+
+\begin_layout Description
+regla_1: (puesto,administrativo) 
+\begin_inset Formula $\rightarrow$
+\end_inset
+
+ (estudios,medios)
+\end_layout
+
+\begin_layout Description
+regla_2: (puesto,analista) 
+\emph on
+y
+\emph default
+ (salario,alto)
+\begin_inset Formula $\rightarrow$
+\end_inset
+
+ (estudios,superiores)
+\end_layout
+
+\begin_layout Standard
+En las siguientes secciones se expondrán los métodos para extraer estas
+ reglas, así como algunas medidas que nos permiten conocer si las reglas
+ encontradas son interesantes o no.
 \end_layout
 
 \begin_layout Subsection
 Medidas clásicas de las reglas de asociación
 \end_layout
 
+\begin_layout Standard
+Existen múltitples medidas que nos permiten tener una idea del interés que
+ pueden suscitar las reglas extraídas de una base de datos.
+ En especial, hay dos medidas que son la base del estudio del interés de
+ una regla.
+ Éstas son el 
+\emph on
+soporte
+\emph default
+ y la 
+\emph on
+confianza
+\emph default
+.
+\end_layout
+
+\begin_layout Subsubsection
+Soporte
+\end_layout
+
+\begin_layout Standard
+El soporte (support) es una medida clásica de la importancia que tiene una
+ regla, ya que nos indica la frecuencia relativa con la que ocurre esta
+ regla.
+ Esto es, una regla con un gran soporte es un hecho que ocurre en casi todas
+ las transacciones de la base de datos.
+ De forma equivalente, puede medirse el soporte sobre un itemset como la
+ frecuencia relativa de este itemset en la base de datos.
+ Esta última medida será muy útil a la hora de extraer las reglas.
+\end_layout
+
+\begin_layout Standard
+Formalmente, el soporte del itemset 
+\begin_inset Formula $X$
+\end_inset
+
+ con respecto al conjunto de transacciones 
+\begin_inset Formula $T$
+\end_inset
+
+ puede definirse como
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\mathrm{supp}(X)=\frac{|\{t\in T;X\subseteq t\}|}{|T|}
+\]
+
+\end_inset
+
+esto es, el número de ocurrencias de 
+\begin_inset Formula $X$
+\end_inset
+
+ dividido entre el número total de transacciones en 
+\begin_inset Formula $T$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+En el caso de una regla, el soporte se define como el número de transacciones
+ que incluyen tanto al antecedente como al consecuente en la base de datos.
+ Formalmente,
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\mathrm{supp}(X\rightarrow Y)=\mathrm{supp}(X\cup Y)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+En términos probabilísticos, el soporte de una regla es la probabilidad
+ de que se den el itemset 
+\begin_inset Formula $X$
+\end_inset
+
+ y el itemset 
+\begin_inset Formula $Y$
+\end_inset
+
+ en la misma transacción
+\begin_inset Formula 
+\[
+\mathrm{supp}(X\rightarrow Y)=P(X\wedge Y)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Al tratarse de una frecuencia relativa (o de una probabilidad), esta medida
+ siempre toma valores entre 
+\begin_inset Formula $0$
+\end_inset
+
+ y 
+\begin_inset Formula $1$
+\end_inset
+
+, ambos incluidos,
+\begin_inset Formula 
+\[
+\mathrm{supp}(X)\in[0,1]\,\forall X\subseteq I
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Confianza
+\end_layout
+
+\begin_layout Standard
+Se trata de una medida del cumplimiento de una regla.
+ Dicho de otro modo, indica si el consecuente aparece cada vez que se da
+ el antecedente.
+ Formalmente,
+\begin_inset Formula 
+\[
+\mathrm{conf}(X\rightarrow Y)=\frac{\mathrm{supp}(X\cup Y)}{\mathrm{supp}(X)}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+En términos probabilísticos, la confianza es la probabilidad de 
+\begin_inset Formula $X$
+\end_inset
+
+ condicionada a 
+\begin_inset Formula $Y$
+\end_inset
+
+, esto es,
+\begin_inset Formula 
+\[
+\mathrm{conf}(X\rightarrow Y)=P(X\mid Y)=\frac{P(X\wedge Y)}{P(X)}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Cabe mencionar que la dirección en la que se expresa la regla es importante,
+ ya que las reglas 
+\begin_inset Formula $X\rightarrow Y$
+\end_inset
+
+ y 
+\begin_inset Formula $Y\rightarrow X$
+\end_inset
+
+ son distintas y pueden tener una confianza distinta.
+ 
+\begin_inset Formula 
+\[
+\mathrm{conf}(X\rightarrow Y)\neq\mathrm{conf}(Y\rightarrow X)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Al igual que el soporte, la confianza toma valores entre 0 y 1,
+\begin_inset Formula 
+\[
+\mathrm{conf}(X\rightarrow Y)\in[0,1]\,\forall X,Y\subseteq I
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Hay dos casos en los que la confianza es una medida muy interesante.
+ Cuando la confianza de una regla es máxima, 
+\begin_inset Formula $\mathrm{conf}(X\rightarrow Y)=1$
+\end_inset
+
+, puede leerse que siempre que ocurre 
+\begin_inset Formula $X$
+\end_inset
+
+ también ocurre 
+\begin_inset Formula $Y$
+\end_inset
+
+.
+ Esto podría parecer una implicación lógicas, pero debemos tener cuidado.
+ Para que una regla sea una implicación lógica, también debe cumplirse 
+\emph on
+modus tollens
+\emph default
+, es decir, que 
+\begin_inset Formula $\mathrm{conf}(\lnot Y\rightarrow\lnot X)=1$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Por otro lado, cuando la confianza de una regla es nula, 
+\begin_inset Formula $\mathrm{conf}(X\rightarrow Y)=0$
+\end_inset
+
+, podemos leer que siempre que ocurre 
+\begin_inset Formula $X$
+\end_inset
+
+, no ocurre 
+\begin_inset Formula $Y$
+\end_inset
+
+.
+ 
+\end_layout
+
 \begin_layout Subsection
 Métodos clásicos de extracción de reglas
+\end_layout
+
+\begin_layout Standard
+El objetivo de la extracción de reglas, en su versión más clásica, consiste
+ en obtener un conjunto de reglas que tengan un mínimo soporte 
+\begin_inset Formula $minSup$
+\end_inset
+
+ y una mínima confianza 
+\begin_inset Formula $minConf$
+\end_inset
+
+.
+ Estos umbrales deben ser dados por un experto en el problema.
+\end_layout
+
+\begin_layout Subsubsection
+Estrategias de extracción de reglas
+\end_layout
+
+\begin_layout Standard
+En una primera aproximación, podemos plantear dos enfoques para la tarea
+ de extacción de reglas.
+ 
+\end_layout
+
+\begin_layout Standard
+El enfoque de fuerza bruta consistiría en crear una lista con todas las
+ reglas de asociación posibles a partir de la base de datos.
+ Una vez generada la lista, podríamos calcular el soporte y la confianza
+ de cada una de ellas, para pasar a eliminar las reglas que no cumplen los
+ umbrales 
+\begin_inset Formula $minSup$
+\end_inset
+
+ y 
+\begin_inset Formula $minConf$
+\end_inset
+
+.
+ Este enfoque es demasiado simple y resulta computacionalmente prohibitivo,
+ debido al inmenso número de itemsets que resultan.
+ En concreto, dados 
+\begin_inset Formula $d$
+\end_inset
+
+ items, existen 
+\begin_inset Formula $2^{d}$
+\end_inset
+
+itemsets candidatos posibles.
+\end_layout
+
+\begin_layout Standard
+El segundo enfoque, un poco más refinado, consiste en separar en dos el
+ proceso de extracción.
+ En primer lugar, se realiza una lista con todos los itemsets frecuentes,
+ es decir, los que cumplen los umbrales de soporte y de confianza.
+ A continuación, se generan las reglas a partir de la lista de itemsets
+ generada.
+ Aunque este enfoque supone una mejora con respecto al enfoque de fuerza
+ bruta, sigue siendo computacionalmente muy costoso, principalmente debido
+ al primero de los pasos.
+\end_layout
+
+\begin_layout Standard
+Por este motivo, tendremos que usar técnicas para reducir el número de candidato
+s, el número de transacciones o bien el número de comparaciones.
+\end_layout
+
+\begin_layout Standard
+A continuación se exponen métodos de extracción de reglas más refinados
+ y que, a pesar de ser clásicos, son usados en nuestros días.
+\end_layout
+
+\begin_layout Subsubsection
+Método Apriori
+\end_layout
+
+\begin_layout Standard
+Se basa en la propiedad antimonótona de la medida de soporte, que puede
+ enunciarse como sigue.
+\end_layout
+
+\begin_layout Quote
+Dado un itemset 
+\begin_inset Formula $X$
+\end_inset
+
+ contenido en un itemset 
+\begin_inset Formula $Y$
+\end_inset
+
+, el soporte de 
+\begin_inset Formula $X$
+\end_inset
+
+ no puede ser inferior al soporte de 
+\begin_inset Formula $Y$
+\end_inset
+
+.
+\begin_inset Formula 
+\[
+\mathrm{supp}(X)\geq\mathrm{supp}(Y)\,\forall X,Y/(X\subseteq Y)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Esto puede leerse del siguiente modo.
+\end_layout
+
+\begin_layout Quote
+Para que un itemset 
+\begin_inset Formula $Y$
+\end_inset
+
+ sea frecuente, todos sus subconjuntos 
+\begin_inset Formula $X$
+\end_inset
+
+ tienen también que serlos.
+\end_layout
+
+\begin_layout Standard
+De este modo, Apriori genera una serie de conjuntos de k-itemsets frecuentes
+ con una longitud 
+\begin_inset Formula $k$
+\end_inset
+
+ cada vez mayor, hasta que se llega a un itemset infrecuente, que no cumple
+ los umbrales de soporte o confianza.
+ En ese momento, Apriori deja de explorar todos los itemsets que contienen
+ al itemset infrecuente encontrado 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "agrawal1996fast"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+La figura
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:rules-methods-apriori"
+
+\end_inset
+
+ ilustra la cantidad de itemsets no explorados gracias a Apriori.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename img/Apriori.eps
+	lyxscale 60
+	width 100text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:rules-methods-apriori"
+
+\end_inset
+
+Ilustración de Apriori.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Hay que destacar que el método Apriori es muy conocido y muy usado, aunque
+ existen muchos factores que afectan a su rendimiento, como la elección
+ del umbral de mínimo soporte, el número de items en la base de datos, el
+ tamaño de la base de datos y la longitud media de las transacciones.
+ Umbrales demasiado bajos en bases de datos grandes pueden hacer que Apriori
+ requiera una cantidad de memoria muy grande, y que sus múltiples iteraciones
+ le hangan tener un tiempo de ejecución bastante elevado.
+\end_layout
+
+\begin_layout Subsubsection
+Método Eclat
+\end_layout
+
+\begin_layout Standard
+Se basa en el mismo principio que Apriori, pero almacena una lista (
+\emph on
+tid-list
+\emph default
+) con la que se acelera el cálculo del soporte.
+ Presenta la desventaja de acelerar el proceso de extracción de reglas a
+ costa de un uso de memoria muy elevado.
+\end_layout
+
+\begin_layout Subsubsection
+Método FP-growth
+\end_layout
+
+\begin_layout Standard
+Consiste en extraer reglas a partir de una representación especial de la
+ base de datos llamada FP-tree.
+ Esta estructura consta de una tabla cabecera y de un grafo de transacciones,
+ con las que se representan, de forma comprimida, todas las transacciones
+ de la base de datos.
+ Una vez que la estructura ha sido construida, se usa una aproximación recursiva
+ para extraer los itemsets que cumplen los umbrales de soporte y confianza
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "han2000mining"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+FP-growth presenta múltiple ventajas, como una reducción significativa tanto
+ en la cantidad de memoria usada como en el tiempo de ejecución, produciendo
+ resultados idénticos a Apriori.
 \end_layout
 
 \begin_layout Subsection
 Conjuntos maximales y cerrados
 \end_layout
 
-\begin_layout Subsection
-Generación de reglas
-\end_layout
-
-\begin_layout Subsection
-Problemas abiertos
+\begin_layout Standard
+Cuando el tamaño de la base de datos es muy grande, el conjunto de itemsets
+ frecuentes crece de forma exponencial.
+ Esto supone problemas de almacenamiento, por lo que será necesario buscar
+ representaciones alternativas que consigan reducir el conjunto inicial,
+ sin perder la capacidad de generar todos los itemsets frecuentes.
+ En este momento, resulta útil hablar de los itemsets maximales y cerrados.
 \end_layout
 
 \begin_layout Standard
-\begin_inset Note Note
+Un 
+\emph on
+itemset frecuente maximal
+\emph default
+ es aquel itemset frecuente para el que ninguno de sus superconjuntos inmediatos
+ son frecuentes.
+ A partir de los itemsets maximales es posible obtener todos los itemsets
+ frecuentes, pueto que serán todos los subconjuntos de items que puedan
+ formarse a partir de ellos.
+ No obstante, el soporte de cada itemset frecuente deberá ser calculado
+ de nuevo.
+\end_layout
+
+\begin_layout Standard
+Un 
+\emph on
+itemset frecuente cerrado
+\emph default
+ es aquel itemset frecuente para el que ninguno de sus superconjuntos inmediatos
+ tiene un soporte igual al del suyo.
+ A partir de los itemsets frecuentes cerrados es posible obtener todos los
+ itemsets frecuentes.
+ Además, cualquier subconjunto de ellos que no sea otro itemset cerrado
+ tiene el mismo soporte que ellos.
+ Por este motivo, no será necesario volver a calcular los soportes de cada
+ itemset.
+ Como contrapunto, los itemsets cerrados son más numerosos que los maximales,
+ por lo que será necesario más espacio para almacenarlos.
+\end_layout
+
+\begin_layout Standard
+La figura
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:itemsets-maximales-cerrados"
+
+\end_inset
+
+ muestra una representación gráfica de estos dos tipos de itemsets.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
 status open
 
 \begin_layout Plain Layout
-intro a part4
+\begin_inset Graphics
+	filename img/itemsets-cerrados.png
+	width 100text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:itemsets-maximales-cerrados"
+
+\end_inset
+
+Itemsets frecuentes, maximales y cerrados.
+ Las elipses con borde azul representan los itemsets frecuentes; el borde
+ azul grueso indica que el itemset es, además, cerrado; el fondo amarillo
+ representa que el itemset es maximal.
+ Se considera un soporte mínimo 
+\begin_inset Formula $minSup=2$
+\end_inset
+
+.
 \end_layout
 
 \end_inset
 
 
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Como propiedad, cabe destacar que los itemsets maximales son un subconjunto
+ de los itemsets cerrados, que a su vez son un subconjunto de los itemsets
+ frecuentes.
+\end_layout
+
+\begin_layout Standard
+Dependiendo de los recursos de memoria y tiempo, será conveniente usar una
+ u otra representación.
+ En concreto, si la eficiencia es más importante, podremos usar los itemsets
+ cerrados, mientras que si la memoria no es demasiado elevada, será conveniente
+ usar los itemsets frecuentes.
+\end_layout
+
+\begin_layout Subsection
+Generación de reglas
+\end_layout
+
+\begin_layout Standard
+Una vez se han encontrado los itemsets frecuentes, se generan las reglas
+ haciendo todas las posibles combinaciones de los elementos del itemset.
+ Solo las reglas que superen el umbral 
+\begin_inset Formula $minConf$
+\end_inset
+
+ son seleccionadas.
+\end_layout
+
+\begin_layout Standard
+Para cada k-itemset frecuente, existen 
+\begin_inset Formula $k$
+\end_inset
+
+ reglas con un solo atributo en el consecuente, y 
+\begin_inset Formula $2^{k}-2$
+\end_inset
+
+ reglas en total, sin embargo, las primeras son más frecuentes.
+ Por ejemplo, en el caso de 
+\begin_inset Formula $k=3$
+\end_inset
+
+, tenemos:
+\end_layout
+
+\begin_layout Itemize
+Reglas con un solo atributo en el consecuente
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\align center
+\begin_inset Formula $AB\rightarrow C$
+\end_inset
+
+
+\begin_inset space \qquad{}
+\end_inset
+
+
+\begin_inset Formula $AC\rightarrow B$
+\end_inset
+
+
+\begin_inset space \qquad{}
+\end_inset
+
+
+\begin_inset Formula $BC\rightarrow A$
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Todas las posibles reglas
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\align center
+\begin_inset Formula $\begin{array}{c}
+AB\rightarrow C\\
+AC\rightarrow B
+\end{array}$
+\end_inset
+
+
+\begin_inset space \qquad{}
+\end_inset
+
+
+\begin_inset Formula $\begin{array}{c}
+BC\rightarrow A\\
+A\rightarrow BC
+\end{array}$
+\end_inset
+
+
+\begin_inset space \qquad{}
+\end_inset
+
+
+\begin_inset Formula $\begin{array}{c}
+B\rightarrow AC\\
+C\rightarrow AB
+\end{array}$
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Standard
+Cabe mencionar que la confianza no tiene la propiedad antimonótona, por
+ lo que no es posible saber si 
+\begin_inset Formula 
+\[
+\mathrm{conf}(AB\rightarrow C)\gtrless\mathrm{conf}(A\rightarrow C)
+\]
+
+\end_inset
+
+, sin embargo, las reglas generadas a partir del mimso itemset sí tienen
+ la propiedad antimonótona
+\begin_inset Formula 
+\[
+\mathrm{conf}(AB\rightarrow C)\geq\mathrm{conf}(A\rightarrow CB)
+\]
+
+\end_inset
+
+
+\begin_inset Formula 
+\[
+\mathrm{conf}(AB\rightarrow C)\geq\mathrm{conf}(B\rightarrow AC)
+\]
+
+\end_inset
+
+De este modo, habrá reglas que no necesiten ser exploradas por conocerse
+ de antemano que tendrán una baja confianza, como se muestra en la figura
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:rules-reglas-podadas-confianza"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename img/reglas-confianza.png
+	lyxscale 20
+	width 100text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:rules-reglas-podadas-confianza"
+
+\end_inset
+
+Reglas podadas por la propiedad antimonótona de la confianza de las reglas
+ del mismo itemset.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Evaluación: Medidas de interés
+\end_layout
+
+\begin_layout Standard
+La interpretación de las reglas obtenidas es un tema complejo, ya que las
+ reglas de asociación representan tendencia y no implicación lógica, como
+ se esbozó anteriormente.
+ Los problemas de la interpretación pueden venir por no tener datos apropiados,
+ por confusiones semánticas de los usuarios que tienen que interpretarlas
+ o por no saber interpretar correctamente las medidas.
+ De hecho, las medidas de soporte y confianza son, en la mayor parte de
+ los casos, insuficientes, ya que no proporcionan una informacion completa
+ sobre la regla.
+\end_layout
+
+\begin_layout Standard
+La solución a este último problema es introducir nuevas medidas de calidad
+ o interés, que, junto a las medidas clásicas, permitan una mejor evaluación
+ e interpretación de las reglas.
+ Hay que tener en cuenta que ninguna de estas medidas es perfecta, y que
+ por tanto será necesario prestar atención a varias de ellas cada vez que
+ se desee evaluar una regla.
+\end_layout
+
+\begin_layout Standard
+A continuación se presentan algunas de las medidas de interés más usadas.
+\end_layout
+
+\begin_layout Subsubsection
+Confianza confirmada
+\end_layout
+
+\begin_layout Standard
+Es una medida que trata de acercar la semántica de las reglas de asociación
+ a la de la lógica formal.
+ Nos indica hasta qué punto es útil un item 
+\begin_inset Formula $A$
+\end_inset
+
+ para predecir otro item 
+\begin_inset Formula $C$
+\end_inset
+
+.
+ Se define como
+\begin_inset Formula 
+\[
+\mathrm{conf}(A\rightarrow C)-\mathrm{conf}(A\rightarrow\lnot C)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Su rango es 
+\begin_inset Formula $[-1,1]$
+\end_inset
+
+, donde 0 significa que es imposible predecir 
+\begin_inset Formula $C$
+\end_inset
+
+ a partir de 
+\begin_inset Formula $A$
+\end_inset
+
+ (independencia); 1 significa que 
+\begin_inset Formula $A$
+\end_inset
+
+ predice o implica 
+\begin_inset Formula $C$
+\end_inset
+
+; -1 significa que 
+\begin_inset Formula $A$
+\end_inset
+
+ predice o implica 
+\begin_inset Formula $\lnot C$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsubsection
+Lift (interés)
+\end_layout
+
+\begin_layout Standard
+Se trata de una medida simétrica, que mide la asociación entre dos itemsets
+ 
+\begin_inset Formula $A$
+\end_inset
+
+ y 
+\begin_inset Formula $C$
+\end_inset
+
+, sin tener en cuenta cuál está en el antecedente o cuál está en el consecuente.
+ Se define como
+\begin_inset Formula 
+\[
+\mathrm{lift}(A\rightarrow C)=\frac{\mathrm{conf}(A\rightarrow C)}{\mathrm{supp}(C)}=\frac{\mathrm{supp}(A\cup C)}{\mathrm{supp}(A)\,\mathrm{supp}(C)}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Su rango es 
+\begin_inset Formula $[0,+\infty)$
+\end_inset
+
+, donde 1 significa independencia; valores menores que 1 significan dependencia
+ negativa; valores altos implican dependencia cada vez más fuerte.
+\end_layout
+
+\begin_layout Standard
+Al no estar acotado, el 
+\emph on
+lift
+\emph default
+ no permite comparar reglas de distintas bases de datos.
+\end_layout
+
+\begin_layout Subsubsection
+Convicción
+\end_layout
+
+\begin_layout Standard
+Para una regla 
+\begin_inset Formula $A\rightarrow C$
+\end_inset
+
+ se define como
+\begin_inset Formula 
+\[
+\frac{\mathrm{supp}(A)\,\mathrm{supp}(C)}{\mathrm{supp}(A\rightarrow\lnot C)}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Su rango es 
+\begin_inset Formula $(0,+\infty)$
+\end_inset
+
+, donde 1 significa independencia estadística; valores menores que 1, dependenci
+a negativa.
+ Valores entre 
+\begin_inset Formula $1.01$
+\end_inset
+
+ y 
+\begin_inset Formula $5$
+\end_inset
+
+ se consideran interesantes, mientras que valores superiores a 
+\begin_inset Formula $5$
+\end_inset
+
+ son reglas obvias.
+\end_layout
+
+\begin_layout Standard
+Al considerarse 
+\begin_inset Formula $\mathrm{supp}(\lnot C)$
+\end_inset
+
+ permite resolver el problema de itemsets muy frecuentes.
+\end_layout
+
+\begin_layout Subsubsection
+Otras medidas de interés
+\end_layout
+
+\begin_layout Standard
+Existen muchas más medidas, como el factor de certeza, que es una medida
+ de implicación relacionada con el lift y la convicción; Yule's Q, que represent
+a la correlación entre eventos dicotómicos relacionados positivamente; o
+ la diferencia absoluta de confianza, que es otra medida de implicación.
+\end_layout
+
+\begin_layout Standard
+Otras medidas interesantes son la diferencia de información, que se basa
+ en la entropía para conocer la ganancia de información que proporciona
+ el antecedente sobre el consecuente.
+\end_layout
+
+\begin_layout Subsubsection
+Medidas subjetivas
+\end_layout
+
+\begin_layout Standard
+Son medidas que tienen en cuenta el conocimiento previo del usuario.
+ Puede medirse, por ejemplo, la utilidad de una regla, basándonos en criterios
+ subjetivos sobre las acciones a realizar al descubrir una regla nueva.
+ Podríamos considerar, por ejemplo, una acción como una campaña de márketing.
+ Entonces, cabe cuestionarse la utilidad de la regla en función del tiempo
+ de vida de la información, en cuanto a su interés para llevar a cabo la
+ acción, el esfuerzo que requiere la actuación, el impacto o los efectos
+ laterales.
+\end_layout
+
+\begin_layout Standard
+De especial interés son las reglas inesperadas, que son aquellas que contradicen
+ las creencias del usuario.
+ Para descubrir reglas inesperadas, será necesario definir cómo representar
+ las creencias del usuario y cómo medir lo inesperado.
+ Los enfoques principales incluyen medidas probabilísticas, de distancia
+ sintáctica y de contradicción lógica.
+\end_layout
+
+\begin_layout Standard
+Un tipo de contradicciones son las paradojas, que son reglas de asociación
+ que revelan tendencias contradictorias.
+ Estas paradojas son útiles para buscar planteamientos distintos del problema.
+\end_layout
+
+\begin_layout Subsection
+Interpretaciones
+\end_layout
+
+\begin_layout Standard
+El objetivo último de las reglas de asociación, al igual que el del aprendizaje
+ no supervisado en general, es conseguir conocimiento novedoso y potencialmente
+ útil.
+ Para ello, es necesario establecer una estructura en los datos, que se
+ corresponda con el marco formal.
+ 
+\end_layout
+
+\begin_layout Standard
+En este contexto, podemos definir una interpretación como una correspondencia
+ que se establece entre elementos de la estructura de datos y elementos
+ del marco formal.
+ Una interpretación específica define, por tanto, qué entendemos por item
+ y transacciones en el contexto de datos que tenemos.
+ De esta forma, la interpretación contribuye a definir la semántica de las
+ reglas.
+\end_layout
+
+\begin_layout Subsubsection
+Interpretación tabular común
+\end_layout
+
+\begin_layout Standard
+En una base de datos con estructura de tabla, los items pueden ser interpretados
+ como parejas (atributo,valor) y las transacciones como registros de la
+ tabla.
+ En este caso, una regla como 
+\begin_inset Newline newline
+\end_inset
+
+(puesto,administrativo) 
+\begin_inset Formula $\rightarrow$
+\end_inset
+
+ (estudios,medios)
+\begin_inset Newline newline
+\end_inset
+
+puede leerse como 
+\begin_inset Quotes fld
+\end_inset
+
+todo el que tiene un puesto de administrativo tiene estudios medios
+\begin_inset Quotes frd
+\end_inset
+
+, o, equivalentemente, 
+\begin_inset Quotes fld
+\end_inset
+
+puesto de administrativo implica tener estudios medios
+\begin_inset Quotes frd
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsubsection
+Reglas jerárquicas
+\end_layout
+
+\begin_layout Standard
+En el caso en que tengamos una estructura jerárquica de items (por ejemplo,
+ varios tipos de refresco dentro del item genérico 
+\begin_inset Quotes fld
+\end_inset
+
+refresco
+\begin_inset Quotes frd
+\end_inset
+
+), podemos establecer reglas jerárquicas.
+ En este caso, los datos consisten en un conjunto de transacciones que contienen
+ items básicos y una jerarquía de categorías que agrupa los items en varios
+ niveles.
+ De esta forma, podemos dar la interpretación de que los items son la unión
+ de los items básicos y sus categorías de la jerarquía, y las transacciones
+ se forman tomando cada transacción de items básicos y añadiendo los ancestros
+ en la jerarquía de todos los items presentes.
+\end_layout
+
+\begin_layout Standard
+Esto tiene una gran utilidad, ya que en el caso de que los items de niveles
+ bajos no tengan soporte para generar reglas, pueden tomarse items superiores
+ en la jerarquía, mientras que si el soporte es excesivo, puede bajarse
+ en el nivel jerárquico.
+\end_layout
+
+\begin_layout Subsubsection
+Reglas secuenciales
+\end_layout
+
+\begin_layout Standard
+Un patrón secuencial se construye a partir de una secuencia de items básicos
+ que tienden a aparecer en un orden prefijado.
+ Este tipo de reglas es muy útil en la minería de texto, ya que se evalúa
+ la confianza de que aparezcan sucesiones de palabras.
+ De este modo, pueden establecerse relaciones entre secuencias en el antecedente
+ y secuencias en el consecuente.
+\end_layout
+
+\begin_layout Subsubsection
+Reglas cuantitativas
+\end_layout
+
+\begin_layout Standard
+Utilizadas para extraer reglas cuando tenemos datos estructurados con variables
+ que pueden tomar valores muy variados y que pueden ser ordenados.
+ Es el caso de las parejas (atributo,valor), donde 
+\emph on
+valor
+\emph default
+ es un número real.
+\end_layout
+
+\begin_layout Standard
+La solución pasa por dividir el dominio de la variable valor en distintos
+ intervalos, que deberán ser definidos por un experto o, en su defecto,
+ por métodos automáticos.
+ Las ventajas de la primera opción es la riqueza semántica que se aporta
+ al problema, haciendo más fácil la interpretación.
+ Sin embargo, la división en intervalos automática puede aportar información
+ nueva, siempre y cuando se ajuste bien el método de división.
 \end_layout
 
 \end_body
