@@ -19,7 +19,10 @@ bibliography: mdans-practic.bib
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Presentación y visualización de los datos <a name="sec-visualization"></a>
+# Introducción
+Este es el trabajo práctico de la asignatura _Minería de Datos: Aprendizaje no Supervisado y Detección de Anomalías_, impartida en el Máster en Ciencia de Datos e Ingeniería de Computadores (DATCOM). En el mismo, se lleva a cabo un estudio sobre la base de datos _bankloan_, aplicando los métodos vistos en prácticas. Este trabajo, realizado de forma original por Cristian González Guerrero, se presenta para su valoración en la evaluación extraordinara de Septiembre de 2017.
+
+# Presentación y visualización de los datos
 ## Descripción de los datos
 El conjunto de datos `bankloan` puede ser abierto en R usando la siguiente instrucción.
 ```{r}
@@ -815,11 +818,11 @@ MiBoxPlot_juntos (mydata.numeric) + coord_flip()
 ```
 
 
-## Detección de outliers en una variable usando tests estadísticos
+### Detección de outliers en una variable usando tests estadísticos
 Otra forma de atajar el problema de la detección de outlies en una variable es usando tests estadísticos.
 
 
-### Test de Grubbs
+#### Test de Grubbs
 Este test nos permite comprobar si existe un único outlier en una única variable, asumiendo que ésta sigue una distribución normal. Habrá que tener precaución con el uso de este test, ya que la asunción de normalidad puede hacer que produzca resultados extraños con otras distribuciones. Además, el test puede indicar que no existe un outlier si efectivamente hay más de uno.
 
 A continuación, aplicaremos el test de Grubbs sobre la columna estudiada anteriormente (ingresos).
@@ -877,7 +880,7 @@ MiPlot_Univariate_Outliers(
 ```
 
 
-### Test de Rosner
+#### Test de Rosner
 El test de Rosner nos permite comprobar si existen $k$ o menos outliers en una variable, asumiendo normalidad. Esto puede solventar el problema visto anteriormente con el test de Grubbs.
 
 Para comprobarlo, aplicaremos el test de Rosner con $k=4$ a los datos usados anteriormente, en los que el test de Grubbs no encontraba los outliers que se enmascaraban. El test ordena las distancias de cada punto a la media de mayor a menor y lanza el test de hipótesis para comprobar si hay menos de $k=4$ outliers.
@@ -919,6 +922,7 @@ Como podemos observar, este test da positivo para los cuatro datos más alejados
 ## Detección de outliers multivariantes
 La detección de outliers en múltiples variables trata de detectar puntos que, a pesar de mostrar valores no demasiado alejados de la media en cada una de las variables, presentan una combinación anómala de valores. Una forma de averiguar este hecho es usando la distancia de Mahalanobis.
 
+### Paquete `mvoutlier`
 A continuación se muestra cómo pueden obtenerse los outliers multivariantes usando el paquete `mvoutlier`. Cabe destacar que no es necesaria la normalización de los datos, ya que la distancia de Mahalanobis es robusta ante los cambios de escala.
 
 ```{r}
@@ -995,6 +999,7 @@ MiPlot_Univariate_Outliers(
 
 Puede apreciarse que no hay una combinación clara de dos variables que hagan que el dato _2_ sea un outlier. Por tanto, deben estar interviniendo más de dos variables.
 
+### Paquete `CerioliOutlierDetection`
 A continuación se repetirán los cómputos realizados anteriormente con el paqute `mvoutlier`, pero esta vez se usará el paquete `CerioliOutlierDetection`. Éste calcula los outliers calculando las distancias de Mahalanobis y usando la aproximación de Hardin/Rocke. La estimación de la matriz de covarianzas es la estimación robusta según MCD.
 
 ```{r}
@@ -1023,8 +1028,328 @@ MiBiPlot_Multivariate_Outliers(
 ```
 
 ## LOF
+Vamos a explorar otros métodos de detección de anomalías. En este caso, vamos a usar la medida de distancia LOF para decidir si un punto es o no un outlier. Dado que este método se basa en una distancia, será necesario trabajar con los datos normalizados.
+
+Cabría cuestionarse si la distancia de Mahalanobis es adecuada para detectar outliers en el caso que nos ocupa. Para ello, podemos usar la función `corr.plot`.
+
+```{r}
+mis.datos.numericos  = dataset.numeric.dt
+mis.datos.numericos.normalizados    = dataset.numeric.dt.norm
+
+reset_par()
+corr.plot(mis.datos.numericos[,7], mis.datos.numericos[,8])
+```
+
+El gráfico nos muestra un diagrama de dispersión al cruzar las variables 1 y 4. Vemos que, a pesar de haber un único grupo, muchos de los puntos quedan fuera de la elipse roja, que representa la distancia de Mahalanobis construida con la estimación robusta de la matriz de covarianzas y las corrrespondientes medias a partir del grupo más numeroso. El hecho de que queden tantos puntos fuera de esta elipse hará que se encuentren muchos outliers, haciendo tal vez que se detecten puntos que no son realmente outliers.
+
+A continuación usaremos la métrica LOF teniendo en cuenta 5 vecinos y representaremos gráficamente los resultados.
+
+```{r}
+numero.de.vecinos.lof = 5
+
+lof.scores = lofactor(
+  mis.datos.numericos.normalizados,
+  k=numero.de.vecinos.lof
+)
+
+plot(lof.scores)
+```
+
+Como podemos ver, hay algunos puntos que tienen un valor de LOF bastante alto. Podríamos considerar que los puntos con un LOF por encima de 1.4 serán outliers.
+
+```{r}
+is.lof.outlier = lof.scores > 1.4
+ 
+MiBiPlot_Multivariate_Outliers(
+  mis.datos.numericos[1:150,],
+  is.lof.outlier[1:150],
+  "LOF Outliers"
+)
+```
+
+Como podemos apreciar, se han encontrado menos outliers esta vez, y los resultados son bastante distintos a los obtenidos con las técnicas anteriores. La elección de la técnica a usar deberá basarse en la distribución de las variables.
+
+Otra posible aproximación para seleccionar los outliers basándonos en LOF sería ordenar los datos por LOF y decidir nosotros el número de outliers que hay en nuestro dataset.
+
 
 ## Detección de outliers basada en clustering
+Otra posible aproximación en la detección de anomalías es usar clustering. Este tipo de aproximaciones también requieren los datos normalizados.
+
+### Clustering con k-means
+A continuación trataremos de buscar 10 outliers usando 3 clusters usando k-means con una distancia euclídea.
+
+```{r}
+numero.de.outliers = 10
+numero.de.clusters = 3
+
+# Hacemos que los resultados de k-means sean repetibles
+set.seed(2)
+
+# Construimos el modelo
+modelo.kmeans = kmeans(
+  mis.datos.numericos.normalizados,
+  centers = numero.de.clusters
+)
+# ¿A qué cluster pertenece cada dato?
+indices.clustering.bankloan = modelo.kmeans$cluster
+# ¿Cuáles son los centros de los clusters obtenidos?
+centroides.normalizados.bankloan  = modelo.kmeans$centers
+```
+
+A continuación calcularemos la distancia de cada punto a su centroide, usando la función `distancias_a_centroides`. Cuanto más alejado esté un dato del centroide de su cluster, más probable es que se trate de un outlier.
+
+```{r}
+distancias_a_centroides = function(
+  datos.normalizados, 
+  indices.asignacion.clustering, 
+  datos.centroides.normalizados
+) {
+  sqrt(
+    rowSums(
+      (
+        datos.normalizados - 
+         datos.centroides.normalizados[indices.asignacion.clustering,]
+      )^2
+    )
+  )
+}
+
+# Calculamos las distancias
+dist.centroides.bankloan = 
+  distancias_a_centroides (
+    mis.datos.numericos.normalizados, 
+    indices.clustering.bankloan, 
+    centroides.normalizados.bankloan
+  )
+
+indices.outliers.bankloan = 
+  order(dist.centroides.bankloan, decreasing=T)[1:numero.de.outliers]
+```
+
+Vamos a definir una función para realizar las tareas anteriores.
+
+```{r}
+# Devuelve los índices de los top-k clustering outliers y sus distancias a los centroides
+top_clustering_outliers = function(datos.normalizados, 
+                                   indices.asignacion.clustering, 
+                                   datos.centroides.normalizados, 
+                                   numero.de.outliers){
+  
+  dist_centroides = distancias_a_centroides (datos.normalizados, 
+                                             indices.asignacion.clustering, 
+                                             datos.centroides.normalizados)
+  
+  indices = order(dist_centroides, decreasing=T)[1:numero.de.outliers]
+  
+  list(distancias = dist_centroides[indices]  , indices = indices)
+}
+```
+
+Ahora podemos llamar a la función `top_clustering_outliers` para obtener los índices y las distancias a los centroides de los outliers.
+
+```{r}
+top.outliers.kmeans = top_clustering_outliers(
+  mis.datos.numericos.normalizados, 
+  indices.clustering.bankloan, 
+  centroides.normalizados.bankloan, 
+  numero.de.outliers
+)
+
+cat("Índices de los top k clustering outliers (k-means, usando distancia euclídea)")
+top.outliers.kmeans$indices 
+cat("Distancias a sus centroides de los top k clustering outliers (k-means, usando distancia euclídea)")
+top.outliers.kmeans$distancias
+```
+
+Podemos visualizar los outliers obtenidos con un BiPlot.
+
+```{r}
+numero.de.datos   = nrow(mis.datos.numericos)
+is.kmeans.outlier = rep(FALSE, numero.de.datos) 
+is.kmeans.outlier[top.outliers.kmeans$indices] = TRUE
+
+BIPLOT.isOutlier             = is.kmeans.outlier
+BIPLOT.cluster.colors        = c("blue","red","brown")
+BIPLOT.asignaciones.clusters = indices.clustering.bankloan
+MiBiPlot_Clustering_Outliers(mis.datos.numericos, "K-Means Clustering Outliers")
+```
+
+Como podemos comprobar, se han detectado únicamente outliers univariantes. Será necesario aumentar el valor de $k$ para encontrar outliers multivariados.
+
+A continuación, vamos a obtener la posición real de los centroides, deshaciendo la normalización z-score. Es un proceso sencillo que consiste en despejar la fórmula $$\mathtt{z-score} = \frac{\mathtt{dato} - \mathtt{media.columna}}{\mathtt{sd.columna}}$$
+
+```{r}
+mis.datos.medias        = colMeans(mis.datos.numericos)
+mis.datos.desviaciones  = apply(mis.datos.numericos, 2, sd , na.rm = TRUE)
+
+centroides.valores      = sweep(centroides.normalizados.bankloan, 
+                                2, 
+                                mis.datos.desviaciones, 
+                                "*")
+
+centroides.valores      = sweep(centroides.valores, 
+                                2, 
+                                mis.datos.medias, 
+                                "+")
+```
+
+
+### Clustering con PAM
+Sería interesante utilizar otras técnicas de clustering para realizar este proceso de detección de anomalías.
+
+A continuación aplicaremos clustering con PAM (Partition Around Medoids). Para ello, será necesario calcular la matriz de distancias de todos con todos usando la función `dist`.
+
+```{r}
+# Mostramos los valores normalizados y no normalizados de los índices
+# Para ello, como los medoides son registros reales de nuestro conjunto de datos
+# basta con acceder a sus valores. No tenemos que revertir el proceso de normalización
+# como tuvimos que hacer con los centroides.
+
+
+matriz.de.distancias              = dist(mis.datos.numericos.normalizados)
+set.seed(2)
+modelo.pam                        = pam(matriz.de.distancias , k = numero.de.clusters)
+indices.asignacion.clustering.pam = modelo.pam$clustering
+medoides.indices                  = modelo.pam$medoids
+medoides.valores.normalizados     = mis.datos.numericos.normalizados[medoides.indices, ]
+medoides.valores                  = mis.datos.numericos[medoides.indices, ]
+
+top.outliers.pam = top_clustering_outliers(mis.datos.numericos.normalizados , 
+                                           indices.asignacion.clustering.pam, 
+                                           medoides.valores.normalizados, 
+                                           numero.de.outliers)
+
+cat("PAM Medoids\n")
+print(medoides.valores)
+cat("PAM Top Outliers\n")
+print(top.outliers.pam$indices)
+cat("kMeans Centroids\n")
+print(centroides.valores)
+cat("kMeans Top Outliers\n")
+print(top.outliers.kmeans$indices)
+```
+
+Como podemos ver, la posición de los centroides y de los medoides es bastante distinta. Sin embargo, la mayor parte de los outliers seleccionados es la misma. Encontraríamos más diferencais con un valor más alto de $k$.
+
+### Clustering con k-means, usando distancia de Mahalanobis
+Podemos considerar la opción de usar una función de distancia distinta a la hora de calcular las distancias entre los puntos y los centroides o medoides. Por ejemplo, podríamos usar la distancia de Mahalanobis.
+
+```{r}
+top_clustering_outliers_distancia_mahalanobis = function(datos, 
+                                                         indices.asignacion.clustering, 
+                                                         numero.de.outliers){
+  
+  cluster.ids = unique(indices.asignacion.clustering)
+  k           = length(cluster.ids)
+  seleccion   = sapply(1:k, function(x) indices.asignacion.clustering == x)
+  
+  
+  # Usando la estimación robusta de la media y covarianza
+  lista.matriz.de.covarianzas   = lapply(1:k, function(x) cov.rob(mis.datos.numericos[seleccion[,x],])$cov)
+  lista.vector.de.medias        = lapply(1:k, function(x) cov.rob(mis.datos.numericos[seleccion[,x],])$center)
+  
+  
+  mah.distances   = lapply(1:k, 
+                           function(x) mahalanobis(mis.datos.numericos[seleccion[,x],], 
+                                                   lista.vector.de.medias[[x]], 
+                                                   lista.matriz.de.covarianzas[[x]]))  
+  
+  todos.juntos = unlist(mah.distances)
+  todos.juntos.ordenados = names(todos.juntos[order(todos.juntos, decreasing=TRUE)])
+  indices.top.mah.outliers = as.numeric(todos.juntos.ordenados[1:numero.de.outliers])
+  
+  
+  list(distancias = mah.distances[indices.top.mah.outliers]  , indices = indices.top.mah.outliers)
+}
+
+top.clustering.outliers.mah = top_clustering_outliers_distancia_mahalanobis(mis.datos.numericos, 
+                                                                            indices.clustering.bankloan, 
+                                                                            numero.de.outliers)
+
+numero.de.datos = nrow(mis.datos.numericos)
+is.kmeans.outlier.mah = rep(FALSE, numero.de.datos) 
+is.kmeans.outlier.mah[top.clustering.outliers.mah$indices] = TRUE
+
+BIPLOT.isOutlier             = is.kmeans.outlier.mah
+BIPLOT.cluster.colors        = c("blue","red","brown")
+MiBiPlot_Clustering_Outliers(mis.datos.numericos, "K-Means Clustering Outliers (Mahalanobis distance)")
+```
+
+Esta medida de distancia ofrece resultados muy distintos e interesantes, ya que se está teniendo en cuenta la dispersión dentro de cada cluster. Así pues, los outliers más evidentes ahora no son los datos más alejados, según la distancia euclídea, del cluster 1. En cambio, los 10 outliers más evidentes son aquellos datos del cluster 2 que claramente se separan considerablemente del núcleo, donde el resto de datos de este cluster están concentrados.
+
+### Clustering con k-means, usando distancia relativa
+A continuación vamos a usar la distancia relativa explicada en teoría como medida de distancia.
+```{r}
+###########################################################################
+# Ampliación: 
+
+# Definir la función top_clustering_outliers_distancia_relativa
+# Esta función hará lo mismo que la función top_clustering_outliers
+# pero usando como criterio la distancia relativa 
+# (pag. 121 de las transparencias)
+
+top_clustering_outliers_distancia_relativa = function(datos.normalizados, 
+                                                      indices.asignacion.clustering, 
+                                                      datos.centroides.normalizados, 
+                                                      numero.de.outliers){
+  
+  dist_centroides = distancias_a_centroides(
+    datos.normalizados, 
+    indices.asignacion.clustering, 
+    datos.centroides.normalizados
+  )
+  
+  cluster.ids = unique(indices.asignacion.clustering)
+  k           = length(cluster.ids)
+  
+  distancias.a.centroides.por.cluster    = sapply(
+    1:k , 
+    function(x) {
+      dist_centroides[indices.asignacion.clustering == cluster.ids[x]]
+    }
+  )
+  
+  distancias.medianas.de.cada.cluster = sapply(
+    1:k,
+    function(x) {
+      median(dist_centroides[[x]])
+    }
+  )
+  
+  todas.las.distancias.medianas.de.cada.cluster  =  
+    distancias.medianas.de.cada.cluster[indices.asignacion.clustering]
+  
+  ratios = dist_centroides / todas.las.distancias.medianas.de.cada.cluster
+  
+  indices.top.outliers = order(ratios, decreasing=T)[1:numero.de.outliers]
+  
+  list(
+    distancias = ratios[indices.top.outliers],
+    indices = indices.top.outliers
+  )
+}
+
+
+
+top.outliers.kmeans.distancia.relativa = top_clustering_outliers_distancia_relativa(
+  mis.datos.numericos.normalizados,                                                                         indices.clustering.bankloan,                                                                              centroides.normalizados.bankloan,                                                                         numero.de.outliers
+)
+
+
+cat("Índices de los top k clustering outliers (k-means, usando distancia relativa)")
+top.outliers.kmeans.distancia.relativa$indices 
+cat("Distancias a sus centroides de los top k clustering outliers (k-means, usando distancia relativa)")
+top.outliers.kmeans.distancia.relativa$distancias
+
+is.kmeans.outlier.dist.rel = rep(F, nrow(mis.datos.numericos))
+is.kmeans.outlier.dist.rel[top.outliers.kmeans.distancia.relativa$indices] = T
+
+BIPLOT.isOutlier             = is.kmeans.outlier.dist.rel
+BIPLOT.cluster.colors        = c("blue","red","brown")
+MiBiPlot_Clustering_Outliers(mis.datos.numericos, "K-Means Clustering Outliers (relative distance)")
+```
+
+Como vemos, los resultados son distintos de nuevo. Esto pone de manifiesto la necesidad de contar con conocimiento experto a la hora de elegir un método para decidir qué son anomalías.
 
 
 
