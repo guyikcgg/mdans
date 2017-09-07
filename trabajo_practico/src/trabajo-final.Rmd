@@ -5,10 +5,11 @@ date: "7 September 2017"
 lang: es
 output: 
   pdf_document:
-    keep_tex: yes
+    keep_tex: no
     number_sections: yes
     pandoc_args: --latex-engine-opt=--shell-escape
     toc: yes
+    toc_depth: 3
 header-includes:
    - \usepackage{svg}
 bibliography: mdans-practic.bib
@@ -675,6 +676,356 @@ Como podemos comprobar, cada uno de los métodos produce un agrupamiento distint
 
 # Detección de anomalías
 
+## Carga de bibliotecas y funciones
+Para realizar las tareas de detección de anomalías, haremos uso de las bibliotecas instaladas en prácticas, así como de las funciones proporcionadas. Podemos cargar estas bibliotecas y funciones en el *workspace* del siguiente modo.
+
+```{r anomalias-funciones-bibliotecas}
+source("anomalias/Outliers_A2_Librerias.R")
+source("anomalias/Outliers_A3_Funciones.R")
+```
+
+Una vez hecho esto, procederemos a estudiar los diferentes métodos de detección de anomalías. Comenzaremos por la detección de anomalías por métodos sencillos en una variable, pasaremos luego a la detección en varias variables y finalmente usaremos métodos basados en distancia y en clustering.
+
+## Detección de outliers en una variable mediante el rango intercuartílico (IQR)
+Comenzaremos por la detección de anomalías usando el método más sencillo posible: el rango intercuartílico. Para ello, empezaremos preparando los datos a procesar. Comenzaremos buscando los outliers en una única columna de nuestros datos numéricos. Más tarde, procederemos a hacer esto con el resto de columnas.
+
+```{r}
+mydata.numeric  = dataset.numeric.dt
+indice.columna  = 4
+nombre.mydata   = "bankloan"
+
+mydata.numeric.scaled = scale(mydata.numeric)
+columna         = mydata.numeric[, indice.columna]
+nombre.columna  = names(mydata.numeric)[indice.columna]
+columna.scaled  = mydata.numeric.scaled[, indice.columna]
+```
+
+### Cómputo de los outliers IQR
+A continuación, calculamos los cuartiles de la distribución que representan los datos de la columna.
+
+
+```{r}
+cuartil.primero = quantile(columna, 0.25)
+cuartil.tercero = quantile(columna, 0.75)
+iqr = cuartil.tercero-cuartil.primero
+```
+
+Un dato será considerado outlier si se encuentra muy alejado del centro de la distribución de frecuencias. En concreto, consideraremos que un dato es un outlier normal si su valor es superior al del tercer cuartil más 1.5 veces el rango intercuartílico, o, equivalentemente, si está por debajo del primer cuartil menos 1.5 veces el rango intercuartílico. Consideraremos que un dato es un outlier extremo si el dato está alejado más de tres veces el rango intercuartílico.
+
+Para hacer esto, calcularemos una serie de umbrales y compararemos cada dato con los mismos. El resultado es el que sigue.
+
+```{r}
+extremo.superior.outlier.normal  = (iqr * 1.5) + cuartil.tercero
+extremo.inferior.outlier.normal  = cuartil.primero - (iqr * 1.5)
+extremo.superior.outlier.extremo = (iqr * 3) + cuartil.tercero
+extremo.inferior.outlier.extremo = cuartil.primero - (iqr * 3)
+
+vector.es.outlier.normal  = 
+  columna > extremo.superior.outlier.normal |
+  columna < extremo.inferior.outlier.normal
+print(paste("Total de outliers normales:", sum(vector.es.outlier.normal)))
+
+vector.es.outlier.extremo = 
+  columna > extremo.superior.outlier.extremo |
+  columna < extremo.inferior.outlier.extremo   
+print(paste("Total de outliers extremos:", sum(vector.es.outlier.extremo)))
+```
+
+A continuación, comprobaremos en qué filas se encuentran los outliers detectados, y qué valor toman dichos outliers.
+
+```{r}
+# Outliers normales
+claves.outliers.normales = which(vector.es.outlier.normal)
+data.frame.outliers.normales = mydata.numeric[vector.es.outlier.normal,]    
+
+print(paste0("Outliers normales en la columna '", nombre.columna, "':"))
+print(data.frame.outliers.normales)
+
+# Outliers extremos
+claves.outliers.extremos = which(vector.es.outlier.extremo)
+data.frame.outliers.extremo = mydata.numeric[vector.es.outlier.extremo,]
+
+print(paste0("Outliers extremos en la columna '", nombre.columna, "':"))
+print(data.frame.outliers.extremo)
+```
+
+Tembién es interesante conocer la desviación de cada outlier con respecto a la media de la columna. Para ello usaremos la variable normalizada.
+
+```{r}
+valores.normalizados.outliers.normales = columna.scaled[vector.es.outlier.normal]
+valores.normalizados.outliers.normales
+```
+
+Esta información puede resumirse con algunos gráficos. A continuación representaremos los valores que toma la columna estudiada en un gráfico, señalando en rojo los outliers. Para ello, haremos uso de las funciones proporcionadas.
+
+```{r}
+MiPlot_Univariate_Outliers(columna, claves.outliers.normales, paste(nombre.columna, "> outliers normales"))
+MiPlot_Univariate_Outliers(columna, claves.outliers.extremos, paste(nombre.columna, "> outliers extremos"))
+```
+
+Otra posible representación es el diagrama de caja con bigotes. En este caso, representaremos los outliers como puntos rojos en el diagrama. Tener el diagrama con los datos escalados es útil para poder comparar distintas distribuciones.
+
+```{r}
+MiBoxPlot_IQR_Univariate_Outliers(mydata.numeric, indice.columna)
+MiBoxPlot_IQR_Univariate_Outliers(mydata.numeric.scaled, indice.columna)
+```
+
+En los archivos proporcionados en las prácticas, se incluyen funciones para el cálculo de outliers con este método. Estas funciones son de gran utilidad, ya que permiten la automatización de los cálculos expuestos anteriormente. Además, gracias a estas funciones podremos calcular los outliers en varias columnas con pocas instrucciones.
+
+```{r}
+# Cálculo de outliers en cada columna. 
+# El resultado es un dataframe del mismo tamaño que nuestro dataset,
+# cuyas columnas se corresponden a los valores calculados anteriormente
+# en la variable `vector.es.outlier.normal`
+frame.es.outlier = as.data.frame(sapply(
+  1:ncol(mydata.numeric),
+  function(x) vector_es_outlier_IQR(mydata.numeric, x)
+))
+names(frame.es.outlier) = names(mydata.numeric)
+head(frame.es.outlier, 10)
+
+print("Número total de outliers por columna:")
+print(apply(frame.es.outlier, 2, sum))
+
+indices.de.outliers.en.alguna.columna.como.una.lista = 
+  sapply(
+    1:ncol(mydata.numeric), 
+    function(x) {
+      vector_claves_outliers_IQR(mydata.numeric, x)
+    }
+  )
+indices.de.outliers.en.alguna.columna =
+  unlist(indices.de.outliers.en.alguna.columna.como.una.lista)
+
+print("Filas en las que hay outliers:")
+indices.de.outliers.en.alguna.columna
+```
+
+
+A continuación podemos observar la distancia de los outliers a la media, pero mostrando a la vez todas las columnas. Sólo las posiciones en las que se hayan encontrado outliers presentarán valores extremos.
+
+```{r}
+head(mydata.numeric.scaled[indices.de.outliers.en.alguna.columna , ], 10)
+```
+
+Ahora podemos visualizar los diagramas de caja con bigotes de cada variable normalizada, representando en rojo los outliers de cada columna.
+
+```{r}
+MiBoxPlot_juntos (mydata.numeric) + coord_flip()
+```
+
+
+## Detección de outliers en una variable usando tests estadísticos
+Otra forma de atajar el problema de la detección de outlies en una variable es usando tests estadísticos.
+
+
+### Test de Grubbs
+Este test nos permite comprobar si existe un único outlier en una única variable, asumiendo que ésta sigue una distribución normal. Habrá que tener precaución con el uso de este test, ya que la asunción de normalidad puede hacer que produzca resultados extraños con otras distribuciones. Además, el test puede indicar que no existe un outlier si efectivamente hay más de uno.
+
+A continuación, aplicaremos el test de Grubbs sobre la columna estudiada anteriormente (ingresos).
+
+```{r}
+columna = mydata.numeric$ingresos
+
+test.de.Grubbs = grubbs.test(columna, two.sided = TRUE)
+test.de.Grubbs
+
+alpha = 0.025 
+
+if (test.de.Grubbs$p.value < alpha){
+  indice.de.outlier.Grubbs = 
+    order(abs(columna - mean(columna)), decreasing = T)[1]
+  valor.de.outlier.Grubbs  = 
+    columna[indice.de.outlier.Grubbs]
+}
+
+print("Índice del outlier encontrado:")
+indice.de.outlier.Grubbs
+print("Valor del outlier encontrado:")
+valor.de.outlier.Grubbs
+
+
+MiPlot_Univariate_Outliers(
+  columna, 
+  indice.de.outlier.Grubbs,
+  "Test de Grubbs sobre la columna 'ingresos'"
+)
+```
+
+Como podemos observar, el test de Grubbs ha arrojado un resultado positivo, dado que el p-value está muy por debajo de los umbrales usuales. Esto verifica que existe un outlier en nuestra columna. Además, hemos podido identificarlo y mostrar cuál es.
+
+Este proceso podría repetirse do forma iterativa, detectando cada vez un outlier y eliminándolo. Sin embargo, existe un caso en el que el outlier no es detectado por estar enmascarado por otro dato, que también debería ser considerado un outlier. En este caso, el test falla y no puede afirmarse con confianza que exista un outlier.
+
+```{r}
+columna = c(45,56,54,34,32,45,67,45,67,154,125,65)
+
+test.de.Grubbs = grubbs.test(columna, two.sided = TRUE)
+test.de.Grubbs$p.value
+
+if (test.de.Grubbs$p.value < alpha){
+  indice.de.outlier.Grubbs = 
+    order(abs(columna - mean(columna)), decreasing = T)[1]
+  valor.de.outlier.Grubbs  = 
+    columna[indice.de.outlier.Grubbs]
+}
+
+MiPlot_Univariate_Outliers(
+  columna, 
+  indice.de.outlier.Grubbs,
+  "Test de Grubbs con outlier enmascarado"
+)
+```
+
+
+### Test de Rosner
+El test de Rosner nos permite comprobar si existen $k$ o menos outliers en una variable, asumiendo normalidad. Esto puede solventar el problema visto anteriormente con el test de Grubbs.
+
+Para comprobarlo, aplicaremos el test de Rosner con $k=4$ a los datos usados anteriormente, en los que el test de Grubbs no encontraba los outliers que se enmascaraban. El test ordena las distancias de cada punto a la media de mayor a menor y lanza el test de hipótesis para comprobar si hay menos de $k=4$ outliers.
+
+```{r}
+test.de.rosner = rosnerTest(columna, k=4)
+
+is.outlier.rosner = test.de.rosner$all.stats$Outlier
+k.mayores.desviaciones.de.la.media = test.de.rosner$all.stats$Obs.Num
+indices.de.outliers.rosner = k.mayores.desviaciones.de.la.media[is.outlier.rosner]
+valores.de.outliers.rosner = columna[indices.de.outliers.rosner]
+
+print("Índices de las k-mayores desviaciones de la media")
+k.mayores.desviaciones.de.la.media
+print("De los k valores fijados, ¿Quién es outlier?")
+is.outlier.rosner 
+print("Los índices de los outliers son:")
+indices.de.outliers.rosner
+print("Los valores de los outliers son:")
+valores.de.outliers.rosner
+
+MiPlot_Univariate_Outliers(
+  columna,
+  indices.de.outliers.rosner,
+  "Test de Rosner"
+)
+```
+
+Como podemos observar, el test de Rosner ha detectado correctamente los dos outliers presentes en los datos. A continuación observaremos el comportamiento de este test con la columna de datos inicial. Para ello usaremos la función `MiPlot_resultados_TestRosner` proporcionada en las prácticas.
+
+```{r}
+columna = mydata.numeric$ingresos
+
+MiPlot_resultados_TestRosner(columna)
+```
+
+Como podemos observar, este test da positivo para los cuatro datos más alejados de la media, indicando que son outliers.
+
+## Detección de outliers multivariantes
+La detección de outliers en múltiples variables trata de detectar puntos que, a pesar de mostrar valores no demasiado alejados de la media en cada una de las variables, presentan una combinación anómala de valores. Una forma de averiguar este hecho es usando la distancia de Mahalanobis.
+
+A continuación se muestra cómo pueden obtenerse los outliers multivariantes usando el paquete `mvoutlier`. Cabe destacar que no es necesaria la normalización de los datos, ya que la distancia de Mahalanobis es robusta ante los cambios de escala.
+
+```{r}
+# Calculamos los valores de significancia
+alpha.value = 0.05
+alpha.value.penalizado = 
+  1 - ( 1 - alpha.value) ^ (1 / nrow(mydata.numeric))
+
+# Establecemos la semilla para el método iterativo que calcula 
+# MCD, con el fin de obtener siempre los mismos resultados
+set.seed(1)
+
+# Generamos el gráfico con los outliers encontrados.
+mvoutlier.plot = uni.plot(
+  mydata.numeric, symb = FALSE,
+  alpha = alpha.value.penalizado
+)
+```
+
+A pesar de representarse varias columnas, cada una correspondiente a un atributo, los outliers han sido obtenidos teniendo en cuenta las distintas variables. Este es el motivo por el que se han detectado outliers que se encuentran muy cerca de la media en algunas de las variables.
+
+A continuación vamos a analizar qué variables son las más influyentes en la designación de los outliers. Para eso, tendremos en cuenta el valor normalizado de cada variable, para ver cuánto se desvía de la media. También representaremos los valores de las variables gráficamente, con un biplot sobre las componentes principales. De esta forma podremos observar las interacciones entre las distintas variables.
+
+Comenzaremos por construir un vector que nos indique cada fila que se ha detectado como outlier.
+
+```{r}
+# Construímos la variable is.MCD.outlier
+is.MCD.outlier = mvoutlier.plot$outliers
+
+numero.de.outliers.MCD = sum(is.MCD.outlier)
+print(paste("Número de outliers MCD:", numero.de.outliers.MCD))
+```
+
+A continuación comprobaremos el valor normalizado de cada outlier, es decir, cuánto se desvía de la media de cada columna. De esta forma, tendremos un valor numérico para la desviación mostrada en la gráfica generada con `uni.plot`.
+
+```{r}
+data.frame.solo.outliers = mydata.numeric.scaled[is.MCD.outlier, ]
+head(data.frame.solo.outliers, 10)
+```
+
+Seguidamente, representamos las cajas con bigotes de las distintas distribuciones con etiquetas para los outliers. Para conseguir visualizar la gráfica correctamente, sólo representaremos los diez primeros puntos.
+
+```{r}
+MiBoxPlot_juntos(
+  mydata.numeric[1:10,], 
+  is.MCD.outlier
+) + coord_flip()
+```
+
+En esta gráfica podemos ver que muchos de los valores detectados como outliers lo son en una única variable, ya que están muy alejados de la distribución central en alguna de las variables. Esto se ve muy claro con los datos etiquetados como _1_ y _7_. En cambio, hay otros datos que no se encuentran el los bordes de las distribuciones, pero han sido detectados como outliers MCD. Esto se ve claramente con el dato etiquetado como _2_.
+
+El BiPlot también nos mostrará esta información, junto con las correlaciones entre las variables. Los puntos mostrados son proyecciones de $n$ dimensiones en el plano, por lo que se trata de una representación aproximada.
+
+```{r}
+MiBiPlot_Multivariate_Outliers(
+  mydata.numeric[1:150,], 
+  is.MCD.outlier[1:150], 
+  "BiPlot de MCD"
+)
+```
+
+El BiPlot muestra claramente que el dato _2_ no es un outlier univariate en ninguna variable, pues está muy cerca del origen de los ejes.
+
+A continuación vamos a construir una matriz con los gráficos de dispersión obtenidos al cruzar todas las variables. En rojo, se representará el dato _2_.
+
+```{r}
+indices.de.interes = 2
+MiPlot_Univariate_Outliers(
+  mydata.numeric[1:50,], 
+  indices.de.interes, 
+  "Scatterplots de MCD (primeros 50 datos)"
+)
+```
+
+Puede apreciarse que no hay una combinación clara de dos variables que hagan que el dato _2_ sea un outlier. Por tanto, deben estar interviniendo más de dos variables.
+
+A continuación se repetirán los cómputos realizados anteriormente con el paqute `mvoutlier`, pero esta vez se usará el paquete `CerioliOutlierDetection`. Éste calcula los outliers calculando las distancias de Mahalanobis y usando la aproximación de Hardin/Rocke. La estimación de la matriz de covarianzas es la estimación robusta según MCD.
+
+```{r}
+is.Cerioli.outlier = cerioli2010.irmcd.test(
+  mydata.numeric, 
+  signif.gamma = alpha.value
+)$outliers
+
+indices.outliers.cerioli = which(is.Cerioli.outlier)
+numero.de.outliers.cerioli = sum(is.Cerioli.outlier)
+
+print("Número de outlies 'Cerioli':")
+numero.de.outliers.cerioli 
+print("Número de outlies 'mvoutlier':")
+numero.de.outliers.MCD
+```
+
+Como podemos comprobar, este método ha detectado menos outliers que el anterior. Sin embargo, el punto _2_ sigue apareciendo como outlier, por lo que podremos considerar que se trata, efectivamente, de un outlier multivariante.
+
+```{r}
+MiBiPlot_Multivariate_Outliers(
+  mydata.numeric[1:150,], 
+  is.Cerioli.outlier[1:150], 
+  "MCD outliers según el paquete Cerioli"
+)
+```
+
+## LOF
+
+## Detección de outliers basada en clustering
+
 
 
 # Reglas de asociación
@@ -833,7 +1184,7 @@ inspect(head(rules.byLift))
 quality(head(rules.byLift))
 ```
 
-# Estudio de las reglas deseadas
+## Estudio de las reglas deseadas
 Vamos a observar las reglas cuyo lift sea superior a 2 o contengan información sobre el impago en el consecuente. Así podremos explorar reglas que nos lleven a predecir el impago, así como otras reglas interesantes.
 
 ```{r}
