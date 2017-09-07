@@ -1224,6 +1224,8 @@ Métodos basados en clasificación
 Se basan en proporcionar un valor numérico que indica cómo de anómala parece
  una observación, atendiendo a que se ajuste bien o no a las clases aprendidas
  durante el entrenamiento.
+ Es decir, podremos calificar de outlier a aquellos datos que no parezcan
+ estar en ninguna de las clases establecidas para el problema.
  Esta tarea puede llevarse a cabo con clasificadores bayesianos, árboles
  de decisión, reglas de asociación o incluso modelos de Markov 
 \begin_inset CommandInset citation
@@ -1235,22 +1237,36 @@ key "estevez2003stochastic,cohen1995fast"
 .
 \end_layout
 
+\begin_layout Standard
+Este tipo de métodos asume que se dispone de un buen modelo para la clasificació
+n, por lo que la etapa de modelado es fundamental en este caso.
+ 
+\end_layout
+
 \begin_layout Subsubsection
 Métodos basados en reglas de asociación
 \end_layout
 
 \begin_layout Standard
-Se basan en generar reglas 
-\begin_inset Note Note
-status open
+Se basan en generar reglas con una elevada confianza confimada, de forma
+ que 
+\begin_inset Formula $A\rightarrow C$
+\end_inset
 
-\begin_layout Plain Layout
-COMPLETAR
-\end_layout
+ sea una regla con mucha confianza, pero 
+\begin_inset Formula $A\rightarrow\lnot C$
+\end_inset
+
+ tenga muy poca confianza.
+ De esta forma, un caso que no cumpla siga la regla es probablemente anómalo,
+ ya que ésta se trata como un silogismo lógico 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "tandon2007weighting"
 
 \end_inset
 
-
+.
 \end_layout
 
 \begin_layout Subsubsection
@@ -1258,16 +1274,16 @@ Métodos basados en kernels
 \end_layout
 
 \begin_layout Standard
-\begin_inset Note Note
-status open
-
-\begin_layout Plain Layout
-COMPLETAR
-\end_layout
-
-\end_inset
-
-
+Se basan en el uso de máquinas de soporte vectorial (SVM) para describir
+ la clase normal.
+ Consiste en determinar el hiperplano que separa la clase normal del resto
+ de puntos.
+ Esto se consigue estableciendo una frontera alrededor de los datos que
+ son considerados normales, con un kernel adecuado para el tipo de datos
+ usado.
+ A partir de aquí, los puntos que estén fuera del núcleo definido para la
+ clase normal pueden ser considerados anómalos, o bien darles una puntuación
+ según su lejanía a este núcleo.
 \end_layout
 
 \begin_layout Subsubsection
@@ -1453,7 +1469,11 @@ Las aproximaciones basadas en la distancia tratan de solventar los problemas
 
 \begin_layout Standard
 En la práctica, esto suele llevarse a cabo usando una aproximación de los
- k vecinos más cercanos (k nearest neighbors).
+ k vecinos más cercanos (
+\emph on
+k Nearest Neighbors
+\emph default
+).
 \end_layout
 
 \begin_layout Standard
@@ -1468,13 +1488,99 @@ En el caso más básico, se calcula la distancia de cada punto a su k-ésimo
 \end_inset
 
 , o la incapacidad de detectar anomalías en el caso de tener distribuciones
- con densidades muy distintas.
+ con densidades muy distintas, como se muestra en la figura
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:anomaly-example-kNN"
+
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
 \begin_inset Graphics
-	filename img/knn-anomaly-not-working.png
+	filename img/anomaly-NearestNeighbor.png
+	lyxscale 50
 	width 100col%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:anomaly-example-kNN"
+
+\end_inset
+
+Ejemplo de detección de anomalías por métodos no supervisados basados en
+ distancia.
+ En este caso, el outlier score se ha obtenido usando la técnica de los
+ k vecinos más cercanos.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename img/anomaly-LOF.png
+	lyxscale 50
+	width 100col%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:anomaly-example-LOF"
+
+\end_inset
+
+Ejemplo de detección de anomalías por métodos no supervisados basados en
+ distancia.
+ En este caso, se ha calculado la medida LOF para identificar los outliers.
+\end_layout
+
+\end_inset
+
+
+\end_layout
 
 \end_inset
 
@@ -1498,7 +1604,18 @@ anomaly score
 k-relative density
 \emph default
 ).
- Este método produce muy buenos resultados en la mayoría de los casos.
+ Este método, que se ilustra en la figura
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:anomaly-example-LOF"
+
+\end_inset
+
+, produce muy buenos resultados en la mayoría de los casos.
 \end_layout
 
 \begin_layout Subsubsection
@@ -1559,6 +1676,84 @@ En cualquiera de estos casos, un modelo de
 
 \begin_layout Subsection
 Evaluación
+\end_layout
+
+\begin_layout Standard
+La evaluación de la detección de anomalías parte de las siguientes asunciones:
+\end_layout
+
+\begin_layout Itemize
+La detección produce una salida binaria, del tipo 
+\emph on
+sí es anomalía
+\emph default
+ o 
+\emph on
+no es anomalía.
+\end_layout
+
+\begin_layout Itemize
+Existe un procedimiento o un experto capaz de determinar con certeza si
+ la predicción de una anomalía es correcta o no.
+ Esto es equivalente a tener un conjunto de test.
+\end_layout
+
+\begin_layout Standard
+Partiendo de este punto, es posible crear una tabla de contingencia entre
+ las predicciones y la realidad, usando las clases 
+\emph on
+anómalo
+\emph default
+ y 
+\emph on
+normal
+\emph default
+.
+ Teniendo esta tabla de contingencia es posible establecer numerosas medidas
+ de calidad, como si se tratara de cualquier otro problema de clasificación.
+ 
+\end_layout
+
+\begin_layout Standard
+No obstante, habrá que tener en cuenta que se trata de una clasificación
+ no balanceada, puesto que la clase de 
+\emph on
+anómalo
+\emph default
+ será mucho menos frecuente que la clase 
+\emph on
+normal
+\emph default
+.
+ Por tanto, será necesario usar medidas adecuadas, evitando el 
+\emph on
+accuracy
+\emph default
+ para optar, por ejemplo, por el 
+\emph on
+recall
+\emph default
+ o 
+\emph on
+F-measure
+\emph default
+.
+ Una buena opción siempre es la curva ROC, y la medida que se deriva de
+ ella, el área bajo la curva (AUC).
+\end_layout
+
+\begin_layout Standard
+Otra medida útil, que debe ser tenida en cuenta, es el índice de falsa alarma
+ (
+\emph on
+false alarm rate
+\emph default
+).
+ Esta medida debe darse siempre junto a la precisión (
+\emph on
+precision
+\emph default
+), para ser capaces de discernir una anomalía real de una falsa alarma.
 \end_layout
 
 \end_body

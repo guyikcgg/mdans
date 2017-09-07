@@ -92,17 +92,14 @@ El clustering o agrupamiento es el proceso de clasificar en grupos un conjunto
 \end_layout
 
 \begin_layout Standard
-Desde un punto de vista más técnico, 
-\begin_inset Note Note
-status open
-
-\begin_layout Plain Layout
-completar
-\end_layout
-
-\end_inset
-
-
+Para conseguirlo, se buscarán grupos de elementos que estén cerca entre
+ sí, atendiendo a sus atributos y a alguna métrica que habrá que definir.
+ Los grupos (
+\emph on
+clusters
+\emph default
+) obtenidos serán etiquetados, con el objetivo de obtener algún tipo de
+ información útil a partir de estas etiquetas.
 \end_layout
 
 \begin_layout Subsubsection
@@ -597,7 +594,7 @@ reference "tab:Funciones-de-distancia"
 \begin_inset Float table
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \noindent
@@ -846,7 +843,7 @@ reference "tab:Funciones-de-semejanza"
 \begin_inset Float table
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \noindent
@@ -1160,7 +1157,11 @@ status open
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Enlace simple (single-link clustering)
+Enlace simple (
+\emph on
+single-link clustering
+\emph default
+)
 \end_layout
 
 \end_inset
@@ -1194,7 +1195,11 @@ status open
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Enlace completo (complete-link clustering)
+Enlace completo (
+\emph on
+complete-link clustering
+\emph default
+)
 \end_layout
 
 \end_inset
@@ -1228,7 +1233,11 @@ status open
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Enlace ponderado (average-link clustering)
+Enlace ponderado (
+\emph on
+average-link clustering
+\emph default
+)
 \end_layout
 
 \end_inset
@@ -1407,12 +1416,117 @@ DBSCAN
 
 \begin_layout Standard
 El algoritmo más representativo de este método es DBSCAN.
- Éste
-\begin_inset Note Note
+ Éste analiza la densidad basándose en el número de vecinos a cada punto
+ dentro de una distancia 
+\begin_inset Formula $\varepsilon$
+\end_inset
+
+ del mismo.
+ De esta forma, un punto puede ser
+\end_layout
+
+\begin_layout Description
+core
+\begin_inset space ~
+\end_inset
+
+point si dentro de la distancia 
+\begin_inset Formula $\varepsilon$
+\end_inset
+
+ hay al menos un número 
+\begin_inset Formula $minPts$
+\end_inset
+
+ de puntos.
+\end_layout
+
+\begin_layout Description
+reachable si hay al menos un core point dentro de la distancia 
+\begin_inset Formula $\varepsilon$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Description
+noise si no hay ningún core point dentro del radio 
+\begin_inset Formula $\varepsilon$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Este comportamiento se ilustra en la figura
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Ilustración-de-DBSCAN"
+
+\end_inset
+
+.
+ DBSCAN es especialmente bueno buscando clusters que tienen una densidad
+ parecida, pero se reparten en el espacio siguiendo patrones irregulares.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
 status open
 
 \begin_layout Plain Layout
-COMPLETAR
+\align center
+\begin_inset Graphics
+	filename img/DBSCAN-Illustration.svg
+	width 50text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Ilustración-de-DBSCAN"
+
+\end_inset
+
+Ilustración del algoritmo DBSCAN.
+ Los puntos rojos son 
+\emph on
+core points
+\emph default
+; los amarillos,
+\emph on
+ reachable points
+\emph default
+; y el azul, 
+\emph on
+noise
+\emph default
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "wiki:dbscan-illustration"
+
+\end_inset
+
+.
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -1421,35 +1535,189 @@ COMPLETAR
 \end_layout
 
 \begin_layout Subsection
-Validación de agrupamientos
-\end_layout
-
-\begin_layout Paragraph
-Criterios internos
-\end_layout
-
-\begin_layout Paragraph
-Criterios externos
+Evaluación
 \end_layout
 
 \begin_layout Standard
-—————
+La evaluación del agrupamiento es un problema difícil de plantear, pues
+ no es fácil evaluar la bondad en un entorno no supervisado.
+ Algunos de los planteamientos que podemos tratar de evaluar son los siguientes:
 \end_layout
 
-\begin_layout Subsection
-Extensiones de los métodos estudiados
+\begin_layout Itemize
+Determinar la tendencia de agrupamiento de un conjunto, es decir, verificar
+ que la estructura creada existe realmente en los datos.
+\end_layout
+
+\begin_layout Itemize
+Comparar los resultados de un agrupamiento con una partición conocida previament
+e.
+\end_layout
+
+\begin_layout Itemize
+Comparar los resultados de dos agrupamientos diferentes, para ver cuál es
+ mejor.
+\end_layout
+
+\begin_layout Itemize
+Determinar el número correcto de grupos.
+\end_layout
+
+\begin_layout Standard
+Atendiendo a si la calidad del agrupamiento se medirá con respecto a una
+ partición conocida previamente o no, podemos distinguir entre dos tipos
+ de medidas distintas: no supervisadas y supervisadas.
 \end_layout
 
 \begin_layout Subsubsection
-Extensiones de los métodos jerárquicos
+Medidas no supervisadas
+\end_layout
+
+\begin_layout Standard
+Se utilizan para medir la bondad de un agrupamiento sin tener ninguna informació
+n adicional sobre el conjunto de datos.
+ Podemos distinguir dos tipos principales:
+\end_layout
+
+\begin_layout Description
+Medidas
+\begin_inset space ~
+\end_inset
+
+de
+\begin_inset space ~
+\end_inset
+
+cohesión miden cómo de compactos son los grupos generados.
+\end_layout
+
+\begin_layout Description
+Medidas
+\begin_inset space ~
+\end_inset
+
+de
+\begin_inset space ~
+\end_inset
+
+separación miden cómo de separados están los grupos entre sí.
+\end_layout
+
+\begin_layout Standard
+Este tipo de medidas son conocidas también como 
+\emph on
+índices internos
+\emph default
+, ya que sólo utilizan los datos del problema, sin referenciar datos que
+ no estén en el conjunto de entrenamiento.
+ Como norma general, cuanto más cohesionados y separados estén los grupos
+ obtenidos entre sí, mejor será la calidad del agrupamiento.
 \end_layout
 
 \begin_layout Subsubsection
-El método de las k-medias difuso
+Medidas supervisadas
+\end_layout
+
+\begin_layout Standard
+Miden la adecuación del agrupamiento obtenido a una partición ya existente.
+ Este tipo de medidas son conocidas también como 
+\emph on
+índices externos
+\emph default
+, ya que utilizan información que no se encuentra recogida en el conjunto
+ de entrenamiento.
+\end_layout
+
+\begin_layout Standard
+Las medidas supervisadas presentan dos enfoques diferentes:
+\end_layout
+
+\begin_layout Description
+Medidas
+\begin_inset space ~
+\end_inset
+
+orientadas
+\begin_inset space ~
+\end_inset
+
+a
+\begin_inset space ~
+\end_inset
+
+la
+\begin_inset space ~
+\end_inset
+
+clasificación miden cómo se ajustan las particiones obtenidas a una clasificació
+n dada.
+ De este modo, se definen algunas medidas de bondad que son usadas también
+ en clasificación.
+ Así, por ejemplo, podemos hablar de 
+\emph on
+precission
+\emph default
+, 
+\emph on
+recall
+\emph default
+, 
+\emph on
+F-medida
+\emph default
+, etc.
+\end_layout
+
+\begin_layout Description
+Medidas
+\begin_inset space ~
+\end_inset
+
+orientadas
+\begin_inset space ~
+\end_inset
+
+a
+\begin_inset space ~
+\end_inset
+
+la
+\begin_inset space ~
+\end_inset
+
+similaridad se basan en construir matrices de incidencia del agrupamiento
+\begin_inset Formula 
+\[
+IG_{ij}=\begin{cases}
+1 & \mathrm{si}\,i\,\mathrm{y}\,j\,\mathrm{pertenecen\,al\,mismo\,cluster}\\
+0 & \mathrm{en\,caso\,contrario}
+\end{cases}
+\]
+
+\end_inset
+
+ y de la clasificación
+\begin_inset Formula 
+\[
+IC_{ij}=\begin{cases}
+1 & \mathrm{si}\,i\,\mathrm{y}\,j\,\mathrm{pertenecen\,a\,la\,misma\,clase}\\
+0 & \mathrm{en\,caso\,contrario}
+\end{cases}
+\]
+
+\end_inset
+
+para establecer medidas de coincidencia entre ambas.
 \end_layout
 
 \begin_layout Subsubsection
-Los métodos de k-medoides
+Medidas relativas
+\end_layout
+
+\begin_layout Standard
+Sirven para comparar diferentes agrupamientos o grupos.
+ Pueden ser supervisadas o no, pero siempre se formulan de forma relativa
+ con el objetivo de comparación.
 \end_layout
 
 \end_body
