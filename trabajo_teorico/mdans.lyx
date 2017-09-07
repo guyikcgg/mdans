@@ -148,16 +148,6 @@ filename "part-3-asociacion-I.lyx"
 
 \end_layout
 
-\begin_layout Standard
-\begin_inset CommandInset include
-LatexCommand input
-filename "part-4-asociacion-II.lyx"
-
-\end_inset
-
-
-\end_layout
-
 \begin_layout Section
 Conclusión
 \end_layout
