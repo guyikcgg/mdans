@@ -4,3 +4,12 @@ old
 .Rproj.user
 *.pdf_tex
 *.bak
+*.tex
+*.aux
+*.log
+*.out
+*.lyx#
+*.png
+*.zip
+*.sav
+.RData
