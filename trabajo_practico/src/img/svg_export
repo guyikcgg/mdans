@@ -1,6 +1,14 @@
 #!/bin/sh
 
-for file in knime/*.svg
-do
-     /usr/bin/inkscape -z -f "${file}" -w 1500 -e "${file}.png"
-done
+if [ -f "$1" ]
+then
+inkscape -z -f "$1" -w 1500 -e "$1.png"
+fi
+
+if [ -d "$1" ]
+then
+  for file in "$1/*.svg"
+  do
+     inkscape -z -f "${file}" -w 1500 -e "${file}.png"
+  done
+fi
